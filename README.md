@@ -101,13 +101,28 @@ The `/review` command intelligently adapts to PR size:
 
 ## Prerequisites
 
-1.  **GitHub CLI**: Required for extracting PR data.
-    ```bash
-    brew install gh
-    gh auth login
-    ```
-2.  **Claude Desktop**: The environment where these commands run.
+1.  **Claude Desktop**: The environment where these commands run.
     - Install from: https://claude.ai/download
+
+2.  **GitHub CLI (`gh`)**: Required for extracting PR data from GitHub.
+    ```bash
+    # Install using Homebrew
+    brew install gh
+
+    # Log in to your GitHub account
+    gh auth login --web
+    ```
+    Follow the instructions in your browser to complete authentication.
+
+3.  **Azure CLI (`az`)**: Required for integrating User Story context from Azure DevOps.
+    ```bash
+    # Install using Homebrew
+    brew install azure-cli
+
+    # Log in to your Azure account
+    az login --allow-no-subscriptions
+    ```
+    After running the login command, your browser will open. Once authenticated, return to the terminal, enter `1` to select the tenant, and press Enter.
 
 ---
 
@@ -119,6 +134,8 @@ For Azure DevOps integration with the `/review` command:
 export AZURE_DEVOPS_ORG_URL="https://dev.azure.com/grupo-exito"
 export AZURE_DEVOPS_PAT="your-personal-access-token"
 ```
+
+> **Security note:** Treat your Personal Access Token (PAT) as a secret. Do not commit it to source control, paste it into public chats, or include it in logs. Store secrets in a secure secrets manager (CI/CD secrets, environment vault, etc.) and rotate them periodically.
 
 ---
 
