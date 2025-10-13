@@ -104,25 +104,11 @@ The `/review` command intelligently adapts to PR size:
 1.  **Claude Desktop**: The environment where these commands run.
     - Install from: https://claude.ai/download
 
-2.  **GitHub CLI (`gh`)**: Required for extracting PR data from GitHub.
+2.  **Required Tools (GitHub CLI & Azure CLI)**: The `review` plugin requires `gh` and `az` to function. After installing the plugin, run the following command inside Claude to automatically install these tools:
     ```bash
-    # Install using Homebrew
-    brew install gh
-
-    # Log in to your GitHub account
-    gh auth login --web
+    /setup
     ```
-    Follow the instructions in your browser to complete authentication.
-
-3.  **Azure CLI (`az`)**: Required for integrating User Story context from Azure DevOps.
-    ```bash
-    # Install using Homebrew
-    brew install azure-cli
-
-    # Log in to your Azure account
-    az login --allow-no-subscriptions
-    ```
-    After running the login command, your browser will open. Once authenticated, return to the terminal, enter `1` to select the tenant, and press Enter.
+    This command will check for the tools and install them using Homebrew if they are missing. It will also guide you to log in if necessary. If you prefer to install them manually, you can use `brew install gh` and `brew install azure-cli`.
 
 ---
 
