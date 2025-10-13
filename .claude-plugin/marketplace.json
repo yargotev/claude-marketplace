@@ -5,7 +5,7 @@
   },
   "plugins": [
     {
-      "name": "review",
+      "name": "exito",
       "source": {
         "source": "github",
         "repo": "yargotev/claude-review-plugin"
