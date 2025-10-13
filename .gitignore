@@ -1,0 +1,87 @@
+## Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+## pnpm store
+.pnpm-store/
+
+## Lockfiles (keep one if you use it intentionally)
+# pnpm-lock.yaml is present in this repo, so keep it tracked. Ignore other lock files if generated locally
+package-lock.json
+yarn.lock
+
+## Build output
+dist/
+build/
+out/
+
+## Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+## IDEs and editors
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+## macOS
+.DS_Store
+.AppleDouble
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+
+## Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+## Environment files
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+## Biome specific caches and output
+node_modules/.cache/biome/
+.biome/
+/.biome*
+
+## Husky
+.husky/_/
+.husky/_/*.tmp
+
+## Misc
+*.local
+*.tmp
+*.temp
+
+# Mac file attributes
+*.DS_Store
+
+## TypeScript
+*.tsbuildinfo
+
+## npm pack
+*.tgz
+
+## CI artifacts
+.nyc_output/
+coverage/
+
+## Editor swap files
+*~
+*.swp
+*.swo
