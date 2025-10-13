@@ -10,7 +10,7 @@ This project is distributed as a Claude Code plugin. Follow these steps to insta
     This command registers the repository as a source for plugins.
 
     ```shell
-    /plugin marketplace add yargotev/claude-review-plugin
+    /plugin marketplace add yargotev/claude-exito-plugin
     ```
 
 2.  **Install the Plugin**:
