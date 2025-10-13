@@ -2,57 +2,66 @@
 
 Welcome! This repository contains custom Claude Desktop commands designed to streamline and enhance the development workflow for the FastStore/VTEX e-commerce platform at Exito.
 
+## Installation
+
+This project is distributed as a Claude Code plugin. Follow these steps to install it:
+
+1.  **Add the Marketplace**:
+    This command registers the repository as a source for plugins.
+
+    ```shell
+    /plugin marketplace add yargotev/claude-review-plugin
+    ```
+
+2.  **Install the Plugin**:
+    Install the `review` plugin from the marketplace you just added.
+
+    ```shell
+    /plugin install review@tech-review-marketplace
+    ```
+
+After installation, restart Claude Code to enable the new commands.
+
 ## Available Commands
 
-Here are the commands you can use to supercharge your Pull Request reviews.
+The `review` plugin provides a suite of commands for comprehensive PR analysis:
 
-### `/tech-review` - Advanced PR Review for FastStore/VTEX
+### `/review` - Comprehensive PR Review
 
-**Purpose**: Provides a comprehensive technical review of Pull Requests, intelligently adapting its strategy to the size and complexity of the changes. It's optimized for the FastStore/VTEX platform and can integrate with Azure DevOps for business context.
+**Purpose**: Performs a holistic technical review of a Pull Request, adapting its strategy based on the PR's size and complexity. It can integrate with Azure DevOps to incorporate business context from user stories.
 
 **Quick Start**:
 ```bash
 # Basic usage for a PR
-/tech-review 1695
+/review 1695
 
 # For a PR with related User Story context from Azure DevOps
-/tech-review 1695 https://dev.azure.com/grupo-exito/GCIT-Agile/_workitems/edit/544232
+/review 1695 https://dev.azure.com/grupo-exito/GCIT-Agile/_workitems/edit/544232
 ```
 
-**Key Features**:
-- ✅ **Adaptive Strategy**: Automatically detects PR size (Small, Medium, Large, Very Large) and adjusts its review depth.
-- ✅ **FastStore/VTEX Compliance**: Checks for adherence to platform-specific standards, including UI components, styling, and multi-store compatibility.
-- ✅ **Business Context Validation**: Integrates with Azure DevOps to ensure the implementation aligns with user story requirements and acceptance criteria.
-- ✅ **Risk Assessment**: Identifies and categorizes issues by severity (Critical, Important, Minor) to prioritize fixes.
-- ✅ **Large PR Handling**: Employs advanced techniques like domain grouping, prioritized file review, and pattern-based analysis for large and complex PRs.
-- ✅ **Actionable Recommendations**: Provides clear next steps, testing strategies, and post-deployment monitoring plans.
+### `/review-perf` - Performance-Focused Review
 
-### `/code-quality-review` - Code Quality & Performance Review
-
-**Purpose**: Performs an in-depth analysis of code quality, performance, and adherence to clean code principles. This command is ideal for a deep-dive into React, Next.js, and general web development best practices.
+**Purpose**: Conducts a deep-dive analysis on performance aspects of the code, focusing on potential bottlenecks, inefficient patterns, and adherence to performance best practices.
 
 **Quick Start**:
 ```bash
-# Basic usage for a PR
-/code-quality-review 1695
-
-# For a PR with multiple related User Stories
-/code-quality-review 1695 <AZURE_DEVOPS_URL_1> <AZURE_DEVOPS_URL_2>
+/review-perf 1695
 ```
 
-**Key Features**:
-- ✅ **Performance Deep-Dive**: Analyzes React hooks, Next.js data fetching (`getStaticProps`, `getServerSideProps`), image optimization, and general web performance patterns.
-- ✅ **Design Pattern Analysis**: Identifies the use of design patterns (Hooks, Provider, Factory, etc.) and suggests opportunities for architectural improvements.
-- ✅ **Clean Code Evaluation**: Checks for adherence to principles like KISS (Keep It Simple, Stupid), DRY (Don't Repeat Yourself), and identifies common code smells.
-- ✅ **TypeScript & Type Safety**: Reviews TypeScript usage, flagging `any` types, type assertions, and other potential safety issues.
-- ✅ **Comprehensive Testing Review**: Assesses test coverage, quality, and strategy for unit, integration, and end-to-end tests.
-- ✅ **Security & Accessibility**: Performs a quick scan for common security vulnerabilities (like XSS) and accessibility (a11y) issues.
+### `/review-sec` - Security-Focused Review
+
+**Purpose**: Scans the code for common security vulnerabilities, insecure patterns, and potential risks.
+
+**Quick Start**:
+```bash
+/review-sec 1695
+```
 
 ---
 
 ## PR Size Handling Strategy
 
-The `/tech-review` command intelligently adapts to PR size:
+The `/review` command intelligently adapts to PR size:
 
 | Size | Lines Changed | Strategy | Review Time |
 |------|---------------|----------|-------------|
@@ -67,10 +76,10 @@ The `/tech-review` command intelligently adapts to PR size:
 
 ### When to Use These Commands
 
-**Use `/tech-review` or `/code-quality-review` when**:
+**Use `/review`, `/review-perf`, or `/review-sec` when**:
 - ✅ PR has passed all CI/CD checks (tests, lint, build).
 - ✅ PR description is complete and clear.
-- ✅ User Stories are linked (if applicable).
+- ✅ User Stories are linked (if applicable for `/review`).
 - ✅ The author has already self-reviewed the changes.
 
 **Don't use them if**:
@@ -82,7 +91,7 @@ The `/tech-review` command intelligently adapts to PR size:
 
 1.  Author creates a PR.
 2.  Automated checks run and pass ✅.
-3.  Reviewer runs `/tech-review <PR_NUMBER> [HU_URL]` for a holistic review or `/code-quality-review <PR_NUMBER> [HU_URL]` for a deep code quality check.
+3.  Reviewer runs `/review <PR_NUMBER> [HU_URL]` for a holistic review, or a specialized command like `/review-perf` or `/review-sec`.
 4.  The AI provides a comprehensive analysis.
 5.  The reviewer validates the AI's findings and provides feedback on GitHub.
 6.  The author addresses the feedback.
@@ -99,34 +108,12 @@ The `/tech-review` command intelligently adapts to PR size:
     ```
 2.  **Claude Desktop**: The environment where these commands run.
     - Install from: https://claude.ai/download
-3.  **Azure DevOps Access** (Optional): For integrating User Story context.
 
 ---
 
-## Configuration
+## Environment Variables
 
-### Claude Desktop
-
-Add the commands to your `claude_desktop_config.json`:
-
-```json
-{
-  "commands": {
-    "tech-review": {
-      "path": "/path/to/your/project/tech-review-plugin/commands/tech-review.md",
-      "description": "Technical PR review with size-adaptive strategy for FastStore/VTEX."
-    },
-    "code-quality-review": {
-      "path": "/path/to/your/project/tech-review-plugin/commands/code-quality-review.md",
-      "description": "In-depth code quality and performance review for React/Next.js."
-    }
-  }
-}
-```
-
-### Environment Variables
-
-For Azure DevOps integration:
+For Azure DevOps integration with the `/review` command:
 
 ```bash
 export AZURE_DEVOPS_ORG_URL="https://dev.azure.com/grupo-exito"
@@ -134,6 +121,7 @@ export AZURE_DEVOPS_PAT="your-personal-access-token"
 ```
 
 ---
+
 
 ## Contributing
 
