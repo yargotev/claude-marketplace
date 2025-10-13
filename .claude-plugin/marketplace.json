@@ -3,11 +3,22 @@
   "owner": {
     "name": "yargotev"
   },
+  "metadata": {
+    "description": "Marketplace for Exito development tools and PR review plugins",
+    "version": "1.0.0"
+  },
   "plugins": [
     {
       "name": "exito",
       "source": "./exito-plugin",
-      "description": "A plugin providing a suite of commands and specialized sub-agents for comprehensive and modular PR reviews."
+      "description": "A plugin providing a suite of commands and specialized sub-agents for comprehensive and modular PR reviews.",
+      "version": "1.1.0",
+      "author": {
+        "name": "yargotev"
+      },
+      "repository": "https://github.com/yargotev/claude-exito-plugin",
+      "keywords": ["pr-review", "code-quality", "exito", "vtex"],
+      "category": "development-tools"
     }
   ]
 }
