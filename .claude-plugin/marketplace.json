@@ -8,7 +8,7 @@
       "name": "exito",
       "source": {
         "source": "github",
-        "repo": "yargotev/claude-review-plugin"
+        "repo": "yargotev/claude-exito-plugin"
       },
       "description": "A plugin providing a suite of commands and specialized sub-agents for comprehensive and modular PR reviews."
     }
