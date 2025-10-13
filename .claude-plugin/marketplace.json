@@ -1,0 +1,16 @@
+{
+  "name": "tech-review-marketplace",
+  "owner": {
+    "name": "Your Name"
+  },
+  "plugins": [
+    {
+      "name": "review",
+      "source": {
+        "source": "github",
+        "repo": "yargotev/claude-review-plugin"
+      },
+      "description": "A plugin providing a suite of commands and specialized sub-agents for comprehensive and modular PR reviews."
+    }
+  ]
+}
