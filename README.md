@@ -10,7 +10,7 @@ This project is distributed as a Claude Code plugin. Follow these steps to insta
     This command registers the repository as a source for plugins.
 
     ```shell
-    /plugin marketplace add yargotev/claude-exito-plugin
+    /plugin marketplace add yargotev/claude-marketplace
     ```
 
 2.  **Install the Plugin**:
@@ -31,6 +31,7 @@ The `review` plugin provides a suite of commands for comprehensive PR analysis:
 **Purpose**: Performs a holistic technical review of a Pull Request, adapting its strategy based on the PR's size and complexity. It can integrate with Azure DevOps to incorporate business context from user stories.
 
 **Quick Start**:
+
 ```bash
 # Basic usage for a PR
 /review 1695
@@ -44,6 +45,7 @@ The `review` plugin provides a suite of commands for comprehensive PR analysis:
 **Purpose**: Conducts a deep-dive analysis on performance aspects of the code, focusing on potential bottlenecks, inefficient patterns, and adherence to performance best practices.
 
 **Quick Start**:
+
 ```bash
 /review-perf 1695
 ```
@@ -53,6 +55,7 @@ The `review` plugin provides a suite of commands for comprehensive PR analysis:
 **Purpose**: Scans the code for common security vulnerabilities, insecure patterns, and potential risks.
 
 **Quick Start**:
+
 ```bash
 /review-sec 1695
 ```
@@ -63,12 +66,12 @@ The `review` plugin provides a suite of commands for comprehensive PR analysis:
 
 The `/review` command intelligently adapts to PR size:
 
-| Size | Lines Changed | Strategy | Review Time |
-|------|---------------|----------|-------------|
-| 🟢 Small | < 200 | Complete detailed review | 15-30 min |
-| 🟡 Medium | 200-500 | Detailed review with focus | 30-60 min |
-| 🟠 Large | 500-1000 | Prioritized + sampling | 1-2 hours |
-| 🔴 Very Large | > 1000 | Risk-based + split recommendation | 2-4 hours |
+| Size          | Lines Changed | Strategy                          | Review Time |
+| ------------- | ------------- | --------------------------------- | ----------- |
+| 🟢 Small      | < 200         | Complete detailed review          | 15-30 min   |
+| 🟡 Medium     | 200-500       | Detailed review with focus        | 30-60 min   |
+| 🟠 Large      | 500-1000      | Prioritized + sampling            | 1-2 hours   |
+| 🔴 Very Large | > 1000        | Risk-based + split recommendation | 2-4 hours   |
 
 ---
 
@@ -77,12 +80,14 @@ The `/review` command intelligently adapts to PR size:
 ### When to Use These Commands
 
 **Use `/review`, `/review-perf`, or `/review-sec` when**:
+
 - ✅ PR has passed all CI/CD checks (tests, lint, build).
 - ✅ PR description is complete and clear.
 - ✅ User Stories are linked (if applicable for `/review`).
 - ✅ The author has already self-reviewed the changes.
 
 **Don't use them if**:
+
 - ❌ CI/CD checks are failing.
 - ❌ The PR is still in a draft state.
 - ❌ There are merge conflicts.
@@ -102,6 +107,7 @@ The `/review` command intelligently adapts to PR size:
 ## Prerequisites
 
 1.  **Claude Desktop**: The environment where these commands run.
+
     - Install from: https://claude.ai/download
 
 2.  **Required Tools (GitHub CLI & Azure CLI)**: The `review` plugin requires `gh` and `az` to function. After installing the plugin, run the following command inside Claude to automatically install these tools:
@@ -114,6 +120,8 @@ The `/review` command intelligently adapts to PR size:
 
 ## Environment Variables
 
+### Azure DevOps Integration
+
 For Azure DevOps integration with the `/review` command:
 
 ```bash
@@ -121,28 +129,50 @@ export AZURE_DEVOPS_ORG_URL="https://dev.azure.com/grupo-exito"
 export AZURE_DEVOPS_PAT="your-personal-access-token"
 ```
 
-> **Security note:** Treat your Personal Access Token (PAT) as a secret. Do not commit it to source control, paste it into public chats, or include it in logs. Store secrets in a secure secrets manager (CI/CD secrets, environment vault, etc.) and rotate them periodically.
+### Context7 MCP Server (Optional)
+
+This plugin includes integration with **Context7**, an MCP server providing up-to-date documentation for any library or framework. To enable it:
+
+1. Get your API key from [https://context7.com](https://context7.com)
+2. Set the environment variable:
+
+```bash
+export CONTEXT7_API_KEY="your-api-key-here"
+```
+
+3. Make it persistent in your shell configuration:
+
+**For bash/zsh (~/.bashrc or ~/.zshrc):**
+
+```bash
+echo 'export CONTEXT7_API_KEY="your-key"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+**For fish (~/.config/fish/config.fish):**
+
+```fish
+set -Ux CONTEXT7_API_KEY "your-key"
+```
+
+4. Restart Claude Code to load the MCP server
+
+**What Context7 provides:**
+
+- Up-to-date documentation for React, Next.js, FastStore, and any library
+- Code examples and best practices
+- Library-specific optimization patterns
+- Automatic availability via MCP tools:
+  - `mcp__context7__resolve-library-id` - Find library IDs
+  - `mcp__context7__get-library-docs` - Fetch documentation with topic filtering
+
+> **Security note:** Treat your Personal Access Token (PAT) and API keys as secrets. Do not commit them to source control, paste them into public chats, or include them in logs. Store secrets in a secure secrets manager (CI/CD secrets, environment vault, etc.) and rotate them periodically.
 
 ---
-
 
 ## Contributing
 
 To improve or add new commands, please see the `docs/` directory for more information on the project structure and development conventions.
-
----
-
-## Changelog
-
-### Version 2.0 (2025-10-04)
-- ✨ Added `/code-quality-review` command for deep-dive analysis.
-- ✨ Restructured README for clarity and user-friendliness.
-- ✨ Enhanced `/tech-review` with intelligent PR size detection and adaptive strategies.
-- 📚 Added comprehensive usage examples and workflow recommendations.
-
-### Version 1.0 (2025-10-03)
-- 🎉 Initial release of the `/tech-review` command.
-- Basic PR review functionality with Azure DevOps integration.
 
 ---
 
