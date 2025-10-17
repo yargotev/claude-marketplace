@@ -1,69 +1,91 @@
 # Project Overview
 
-This project contains the configuration and documentation for a custom Claude command, `/tech-review`, designed for comprehensive technical reviews of Pull Requests (PRs) on the FastStore/VTEX e-commerce platform.
+This is a **Claude Code plugin** that provides comprehensive PR review commands for FastStore/VTEX e-commerce development at Exito. The plugin is distributed via marketplace and uses an advanced multi-agent orchestration pattern with persistent context management.
 
-The primary goal of this project is to provide a powerful, automated PR review process that adapts to the size and complexity of the changes, integrates with business context from Azure DevOps, and enforces development best practices.
+The primary goal is to provide a powerful, modular, and efficient automated PR review process that:
+- Adapts intelligently to PR size and complexity
+- Integrates business context from Azure DevOps
+- Enforces development best practices across multiple dimensions
+- Optimizes token efficiency through context persistence (67% reduction)
 
 **Main Technologies:**
 
-*   **Claude:** The AI model that powers the `/tech-review` command.
-*   **GitHub CLI (`gh`):** Used to extract PR data, diffs, and other information from GitHub.
-*   **Azure DevOps:** Used to pull in business context from user stories.
-*   **Markdown:** Used for defining the command's logic and for all documentation.
+*   **Claude:** Powers specialized sub-agents for multi-dimensional code analysis
+*   **GitHub CLI (`gh`):** Extracts PR data, diffs, and metadata
+*   **Azure DevOps MCP Tools:** Integrates business context from User Stories
+*   **Context7 MCP Server:** Provides up-to-date documentation for any library/framework
+*   **Markdown:** Defines commands and agent logic
+*   **Claude Agent SDK:** Manages agent orchestration and parallel execution
 
 **Architecture:**
 
-The project is structured around a single, powerful Claude command (`/tech-review`) defined in `commands/tech-review.md`. This command is broken down into several phases:
+The plugin implements an **advanced multi-agent orchestration pattern** with persistent context management:
 
-1.  **Data Collection & Size Assessment:** Gathers PR metadata and classifies the PR size to determine the review strategy.
-2.  **Business Context Validation:** Integrates with Azure DevOps to validate the PR against user stories.
-3.  **Technical Analysis:** Performs a deep dive into the code, checking for code quality, performance, security, and compliance with FastStore/VTEX standards.
-4.  **Risk Assessment:** Categorizes issues by severity and provides a risk analysis, especially for large PRs.
-5.  **Recommendations & Next Steps:** Provides actionable feedback, suggestions, and a plan for testing and monitoring.
+1.  **Context Gathering:** Extracts PR metadata, diffs, and classifies PR size
+2.  **Business Validation** (optional): Integrates with Azure DevOps to validate against User Stories
+3.  **Parallel Analysis:** Six specialized agents analyze performance, architecture, code quality, security, testing, and accessibility simultaneously
+4.  **Synthesis:** Combines all findings into a unified comprehensive review
+5.  **Persistent Storage:** All context and reports saved to `.claude/sessions/pr_reviews/` for reusability and audit trail
 
-The project also includes extensive documentation on how to use the command, best practices, and how to extend the system with new commands.
+Key components:
+- **Commands:** `/review`, `/review-perf`, `/review-sec` for different review scopes
+- **Agents:** 8 specialized sub-agents for focused analysis
+- **MCP Servers:** Context7 for documentation, Azure DevOps for business alignment
+- **Context Persistence:** Dramatically reduces token usage by sharing context via files instead of messages
 
 # Building and Running
 
-This is not a traditional software project with a build process. The "running" of this project involves using the `/tech-review` command within the Claude environment.
+This is a Claude Code plugin distributed via marketplace. Installation and usage are straightforward:
 
 **Prerequisites:**
 
-*   **GitHub CLI:** `brew install gh`
 *   **Claude Desktop:** Installed from `https://claude.ai/download`
-*   **Azure DevOps Access (optional):** For user story integration.
+*   **GitHub CLI:** Automatically installed via `/setup` command
+*   **Azure CLI:** Automatically installed via `/setup` command
 
-**To use the `/tech-review` command:**
+**Installation:**
 
-1.  **Configure Claude Desktop:** Add the command to your `claude_desktop_config.json`:
-    ```json
-    {
-      "commands": {
-        "tech-review": {
-          "path": "/path/to/pr-review-ext/commands/tech-review.md",
-          "description": "Technical PR review with size-adaptive strategy"
-        }
-      }
-    }
-    ```
-2.  **Set Environment Variables (optional):** For Azure DevOps integration:
-    ```bash
-    export AZURE_DEVOPS_ORG_URL="https://dev.azure.com/grupo-exito"
-    export AZURE_DEVOPS_PAT="your-personal-access-token"
-    ```
-3.  **Run the command:**
-    ```bash
-    # Basic usage
-    /tech-review <PR_NUMBER>
+```bash
+# Add the marketplace
+/plugin marketplace add yargotev/claude-exito-plugin
 
-    # With User Story context
-    /tech-review <PR_NUMBER> <AZURE_DEVOPS_USER_STORY_URL>
-    ```
+# Install the plugin
+/plugin install exito@yargotev-marketplace
+
+# Setup dependencies (GitHub CLI, Azure CLI)
+/setup
+```
+
+**Using the Commands:**
+
+```bash
+# Comprehensive PR review
+/review <PR_NUMBER>
+
+# With Azure DevOps context
+/review <PR_NUMBER> https://dev.azure.com/grupo-exito/GCIT-Agile/_workitems/edit/12345
+
+# Performance-focused review
+/review-perf <PR_NUMBER>
+
+# Security-focused review
+/review-sec <PR_NUMBER>
+```
+
+**Optional: Setup Context7 MCP Server**
+
+```bash
+# Get your API key from https://context7.com
+export CONTEXT7_API_KEY="your-api-key"
+
+# Restart Claude Code to load the MCP server
+```
 
 # Development Conventions
 
-*   **Command Definition:** Commands are defined in Markdown files in the `commands/` directory.
-*   **Documentation:** All documentation is in Markdown in the `docs/` directory.
-*   **Modularity:** The `/tech-review` command is broken down into logical phases, making it easier to understand and maintain.
-*   **Extensibility:** The project is designed to be extended with new commands by adding new Markdown files to the `commands/` directory.
-*   **Versioning:** The `README.md` includes a changelog for tracking versions of the command.
+*   **Plugin Structure:** Commands in `commands/`, agents in `agents/`, MCP config in `.mcp.json`
+*   **Agent Pattern:** Each agent has YAML frontmatter with tools, model, and clear role definitions
+*   **Context Persistence:** Agents share context via files (`.claude/sessions/pr_reviews/`), not messages
+*   **Parallel Execution:** Independent agents run concurrently for maximum efficiency
+*   **Tool Selectivity:** Each agent only has access to tools it needs (principle of least privilege)
+*   **Versioning:** See `CLAUDE.md` and `README.md` for detailed versioning and architecture notes
