@@ -30,22 +30,22 @@ The plugin uses an **advanced multi-agent orchestration pattern** with persisten
 
 ```
 exito-plugin/
-├── commands/          # User-facing slash commands
-│   ├── review.md      # Main orchestrator command (IMPROVED with persistence)
-│   ├── review-perf.md # Performance-focused review
-│   ├── review-sec.md  # Security-focused review
-│   └── setup.md       # Dependency installer
-├── agents/            # Specialized sub-agents (ALL IMPROVED)
+├── .claude-plugin/              # Plugin metadata
+│   └── plugin.json              # Plugin configuration
+├── commands/                    # User-facing slash commands
+│   ├── review.md                # Main orchestrator command (IMPROVED with persistence)
+│   ├── review-perf.md           # Performance-focused review
+│   └── review-sec.md            # Security-focused review
+├── agents/                      # Specialized sub-agents (ALL IMPROVED)
 │   ├── 1-context-gatherer.md      # PR metadata & diff collection
 │   ├── 2-business-validator.md    # Azure DevOps integration
 │   ├── 3-performance-analyzer.md  # React/Next.js performance
 │   ├── 4-architecture-reviewer.md # Design patterns & structure
-│   ├── 5-clean-code-auditor.md   # Code quality & style
-│   ├── 6-security-scanner.md     # Security vulnerabilities
-│   ├── 7-testing-assessor.md     # Test coverage & quality
+│   ├── 5-clean-code-auditor.md    # Code quality & style
+│   ├── 6-security-scanner.md      # Security vulnerabilities
+│   ├── 7-testing-assessor.md      # Test coverage & quality
 │   └── 8-accessibility-checker.md # WCAG compliance
-└── scripts/
-    └── install-deps.sh            # Homebrew installer script
+└── .mcp.json                    # MCP server configuration (Context7)
 ```
 
 ### Architectural Improvements (2025)
@@ -183,14 +183,26 @@ Each agent's instructions are defined in its markdown file. To change what an ag
 
 ## Environment Variables
 
-For Azure DevOps integration (optional):
+### Azure DevOps Integration (Optional)
+
+For Azure DevOps integration with the business-validator agent:
 
 ```bash
 export AZURE_DEVOPS_ORG_URL="https://dev.azure.com/grupo-exito"
 export AZURE_DEVOPS_PAT="your-personal-access-token"
 ```
 
-These are only required if using the business-validator agent with User Story URLs.
+### Context7 MCP Server (Optional)
+
+To enable the Context7 MCP server for up-to-date library documentation:
+
+```bash
+export CONTEXT7_API_KEY="your-api-key-here"
+```
+
+Get your API key from [https://context7.com](https://context7.com).
+
+**MCP Configuration:** The plugin includes Context7 configuration in [exito-plugin/.mcp.json](exito-plugin/.mcp.json). The MCP server loads automatically when the environment variable is set.
 
 ## Agent-Specific Notes
 
@@ -228,6 +240,47 @@ The plugin is distributed via the marketplace `yargotev/claude-exito-plugin` and
 
 1. Committing changes to the repository
 2. Users pulling the latest version via `/plugin update exito@yargotev-marketplace`
+
+## MCP Server Integration
+
+The plugin includes **Context7 MCP Server** integration for accessing up-to-date documentation and code examples.
+
+### Configuration
+
+MCP server configuration is stored in [exito-plugin/.mcp.json](exito-plugin/.mcp.json):
+
+```json
+{
+  "mcpServers": {
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"
+      },
+      "description": "Access up-to-date documentation and code examples for any library/framework"
+    }
+  }
+}
+```
+
+### Available Tools
+
+Once configured and Claude Code is restarted, the following MCP tools are available to agents:
+
+- **`mcp__context7__resolve-library-id`**: Resolves library names to Context7 IDs (e.g., "react" → "/facebook/react")
+- **`mcp__context7__get-library-docs`**: Fetches up-to-date documentation for specific libraries with optional topic filtering
+
+### Setup Instructions
+
+1. Get API key from [https://context7.com](https://context7.com)
+2. Set environment variable: `export CONTEXT7_API_KEY="your-key"`
+3. Make persistent by adding to shell config (~/.zshrc, ~/.bashrc, etc.)
+4. Restart Claude Code
+
+### Adding More MCP Servers
+
+To add additional MCP servers (Sentry, Linear, etc.), edit [exito-plugin/.mcp.json](exito-plugin/.mcp.json) and add new server configurations. Follow the same pattern with appropriate URL, authentication method (headers, oauth, etc.), and environment variable expansion.
 
 ---
 
