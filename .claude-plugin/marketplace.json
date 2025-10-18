@@ -1,24 +1,34 @@
 {
-  "name": "yargotev-marketplace",
+  "name": "exito-marketplace",
   "owner": {
-    "name": "yargotev"
+    "name": "Yerson",
+    "email": "yargote355@grupo-exito.com"
   },
   "metadata": {
-    "description": "Marketplace for Exito development tools and PR review plugins",
+    "description": "Professional engineering workflow plugins with automated session management, code quality tools, and specialized review agents",
     "version": "1.0.0"
   },
   "plugins": [
     {
-      "name": "exito",
+      "name": "exito-plugin",
       "source": "./exito-plugin",
-      "description": "A plugin providing a suite of commands and specialized sub-agents for comprehensive and modular PR reviews.",
-      "version": "1.1.0",
+      "description": "Complete senior engineer workflow system with research, planning, implementation, testing, and review phases. Includes automated session management with hooks.",
+      "version": "1.0.0",
       "author": {
-        "name": "yargotev"
+        "name": "Yerson",
+        "email": "yargote355@grupo-exito.com"
       },
-      "repository": "https://github.com/yargotev/claude-exito-plugin",
-      "keywords": ["pr-review", "code-quality", "exito", "vtex"],
-      "category": "development-tools"
+      "category": "productivity",
+      "keywords": [
+        "senior-engineer",
+        "workflow",
+        "automation",
+        "testing",
+        "code-review",
+        "session-management",
+        "hooks",
+        "quality-assurance"
+      ]
     }
   ]
 }
