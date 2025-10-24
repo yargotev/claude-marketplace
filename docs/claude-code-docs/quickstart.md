@@ -1,327 +1,396 @@
-# Quickstart
+# Plugins
 
-> Welcome to Claude Code!
-
-This quickstart guide will have you using AI-powered coding assistance in just a few minutes. By the end, you'll understand how to use Claude Code for common development tasks.
-
-## Before you begin
-
-Make sure you have:
-
-- A terminal or command prompt open
-- A code project to work with
-- A [Claude.ai](https://claude.ai) (recommended) or [Claude Console](https://console.anthropic.com/) account
-
-## Step 1: Install Claude Code
-
-### NPM Install
-
-If you have [Node.js 18 or newer installed](https://nodejs.org/en/download/):
-
-```sh theme={null}
-npm install -g @anthropic-ai/claude-code
-```
-
-### Native Install
+> Extend Claude Code with custom commands, agents, hooks, Skills, and MCP servers through the plugin system.
 
 <Tip>
-  Alternatively, try our new native install, now in beta.
+  For complete technical specifications and schemas, see [Plugins reference](/en/docs/claude-code/plugins-reference). For marketplace management, see [Plugin marketplaces](/en/docs/claude-code/plugin-marketplaces).
 </Tip>
 
-**Homebrew (macOS, Linux):**
+Plugins let you extend Claude Code with custom functionality that can be shared across projects and teams. Install plugins from [marketplaces](/en/docs/claude-code/plugin-marketplaces) to add pre-built commands, agents, hooks, Skills, and MCP servers, or create your own to automate your workflows.
 
-```sh theme={null}
-brew install --cask claude-code
+## Quickstart
+
+Let's create a simple greeting plugin to get you familiar with the plugin system. We'll build a working plugin that adds a custom command, test it locally, and understand the core concepts.
+
+### Prerequisites
+
+- Claude Code installed on your machine
+- Basic familiarity with command-line tools
+
+### Create your first plugin
+
+<Steps>
+  <Step title="Create the marketplace structure">
+    ```bash  theme={null}
+    mkdir test-marketplace
+    cd test-marketplace
+    ```
+  </Step>
+
+  <Step title="Create the plugin directory">
+    ```bash  theme={null}
+    mkdir my-first-plugin
+    cd my-first-plugin
+    ```
+  </Step>
+
+  <Step title="Create the plugin manifest">
+    ```bash Create .claude-plugin/plugin.json theme={null}
+    mkdir .claude-plugin
+    cat > .claude-plugin/plugin.json << 'EOF'
+    {
+    "name": "my-first-plugin",
+    "description": "A simple greeting plugin to learn the basics",
+    "version": "1.0.0",
+    "author": {
+    "name": "Your Name"
+    }
+    }
+    EOF
+    ```
+  </Step>
+
+  <Step title="Add a custom command">
+    ```bash Create commands/hello.md theme={null}
+    mkdir commands
+    cat > commands/hello.md << 'EOF'
+    ---
+    description: Greet the user with a personalized message
+    ---
+
+    # Hello Command
+
+    Greet the user warmly and ask how you can help them today. Make the greeting personal and encouraging.
+    EOF
+    ```
+
+  </Step>
+
+  <Step title="Create the marketplace manifest">
+    ```bash Create marketplace.json theme={null}
+    cd ..
+    mkdir .claude-plugin
+    cat > .claude-plugin/marketplace.json << 'EOF'
+    {
+    "name": "test-marketplace",
+    "owner": {
+    "name": "Test User"
+    },
+    "plugins": [
+    {
+      "name": "my-first-plugin",
+      "source": "./my-first-plugin",
+      "description": "My first test plugin"
+    }
+    ]
+    }
+    EOF
+    ```
+  </Step>
+
+  <Step title="Install and test your plugin">
+    ```bash Start Claude Code from parent directory theme={null}
+    cd ..
+    claude
+    ```
+
+    ```shell Add the test marketplace theme={null}
+    /plugin marketplace add ./test-marketplace
+    ```
+
+    ```shell Install your plugin theme={null}
+    /plugin install my-first-plugin@test-marketplace
+    ```
+
+    Select "Install now". You'll then need to restart Claude Code in order to use the new plugin.
+
+    ```shell Try your new command theme={null}
+    /hello
+    ```
+
+    You'll see Claude use your greeting command! Check `/help` to see your new command listed.
+
+  </Step>
+</Steps>
+
+You've successfully created and tested a plugin with these key components:
+
+- **Plugin manifest** (`.claude-plugin/plugin.json`) - Describes your plugin's metadata
+- **Commands directory** (`commands/`) - Contains your custom slash commands
+- **Test marketplace** - Allows you to test your plugin locally
+
+### Plugin structure overview
+
+Your plugin follows this basic structure:
+
+```
+my-first-plugin/
+├── .claude-plugin/
+│   └── plugin.json          # Plugin metadata
+├── commands/                 # Custom slash commands (optional)
+│   └── hello.md
+├── agents/                   # Custom agents (optional)
+│   └── helper.md
+├── skills/                   # Agent Skills (optional)
+│   └── my-skill/
+│       └── SKILL.md
+└── hooks/                    # Event handlers (optional)
+    └── hooks.json
 ```
 
-**macOS, Linux, WSL:**
+**Additional components you can add:**
 
-```bash theme={null}
-curl -fsSL https://claude.ai/install.sh | bash
-```
-
-**Windows PowerShell:**
-
-```powershell theme={null}
-irm https://claude.ai/install.ps1 | iex
-```
-
-**Windows CMD:**
-
-```batch theme={null}
-curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
-```
-
-## Step 2: Log in to your account
-
-Claude Code requires an account to use. When you start an interactive session with the `claude` command, you'll need to log in:
-
-```bash theme={null}
-claude
-# You'll be prompted to log in on first use
-```
-
-```bash theme={null}
-/login
-# Follow the prompts to log in with your account
-```
-
-You can log in using either account type:
-
-- [Claude.ai](https://claude.ai) (subscription plans - recommended)
-- [Claude Console](https://console.anthropic.com/) (API access with pre-paid credits)
-
-Once logged in, your credentials are stored and you won't need to log in again.
+- **Commands**: Create markdown files in `commands/` directory
+- **Agents**: Create agent definitions in `agents/` directory
+- **Skills**: Create `SKILL.md` files in `skills/` directory
+- **Hooks**: Create `hooks/hooks.json` for event handling
+- **MCP servers**: Create `.mcp.json` for external tool integration
 
 <Note>
-  When you first authenticate Claude Code with your Claude Console account, a workspace called "Claude Code" is automatically created for you. This workspace provides centralized cost tracking and management for all Claude Code usage in your organization.
+  **Next steps**: Ready to add more features? Jump to [Develop more complex plugins](#develop-more-complex-plugins) to add agents, hooks, and MCP servers. For complete technical specifications of all plugin components, see [Plugins reference](/en/docs/claude-code/plugins-reference).
 </Note>
+
+---
+
+## Install and manage plugins
+
+Learn how to discover, install, and manage plugins to extend your Claude Code capabilities.
+
+### Prerequisites
+
+- Claude Code installed and running
+- Basic familiarity with command-line interfaces
+
+### Add marketplaces
+
+Marketplaces are catalogs of available plugins. Add them to discover and install plugins:
+
+```shell Add a marketplace theme={null}
+/plugin marketplace add your-org/claude-plugins
+```
+
+```shell Browse available plugins theme={null}
+/plugin
+```
+
+For detailed marketplace management including Git repositories, local development, and team distribution, see [Plugin marketplaces](/en/docs/claude-code/plugin-marketplaces).
+
+### Install plugins
+
+#### Via interactive menu (recommended for discovery)
+
+```shell Open the plugin management interface theme={null}
+/plugin
+```
+
+Select "Browse Plugins" to see available options with descriptions, features, and installation options.
+
+#### Via direct commands (for quick installation)
+
+```shell Install a specific plugin theme={null}
+/plugin install formatter@your-org
+```
+
+```shell Enable a disabled plugin theme={null}
+/plugin enable plugin-name@marketplace-name
+```
+
+```shell Disable without uninstalling theme={null}
+/plugin disable plugin-name@marketplace-name
+```
+
+```shell Completely remove a plugin theme={null}
+/plugin uninstall plugin-name@marketplace-name
+```
+
+### Verify installation
+
+After installing a plugin:
+
+1. **Check available commands**: Run `/help` to see new commands
+2. **Test plugin features**: Try the plugin's commands and features
+3. **Review plugin details**: Use `/plugin` → "Manage Plugins" to see what the plugin provides
+
+## Set up team plugin workflows
+
+Configure plugins at the repository level to ensure consistent tooling across your team. When team members trust your repository folder, Claude Code automatically installs specified marketplaces and plugins.
+
+**To set up team plugins:**
+
+1. Add marketplace and plugin configuration to your repository's `.claude/settings.json`
+2. Team members trust the repository folder
+3. Plugins install automatically for all team members
+
+For complete instructions including configuration examples, marketplace setup, and rollout best practices, see [Configure team marketplaces](/en/docs/claude-code/plugin-marketplaces#how-to-configure-team-marketplaces).
+
+---
+
+## Develop more complex plugins
+
+Once you're comfortable with basic plugins, you can create more sophisticated extensions.
+
+### Add Skills to your plugin
+
+Plugins can include [Agent Skills](/en/docs/claude-code/skills) to extend Claude's capabilities. Skills are model-invoked—Claude autonomously uses them based on the task context.
+
+To add Skills to your plugin, create a `skills/` directory at your plugin root and add Skill folders with `SKILL.md` files. Plugin Skills are automatically available when the plugin is installed.
+
+For complete Skill authoring guidance, see [Agent Skills](/en/docs/claude-code/skills).
+
+### Organize complex plugins
+
+For plugins with many components, organize your directory structure by functionality. For complete directory layouts and organization patterns, see [Plugin directory structure](/en/docs/claude-code/plugins-reference#plugin-directory-structure).
+
+### Test your plugins locally
+
+When developing plugins, use a local marketplace to test changes iteratively. This workflow builds on the quickstart pattern and works for plugins of any complexity.
+
+<Steps>
+  <Step title="Set up your development structure">
+    Organize your plugin and marketplace for testing:
+
+    ```bash Create directory structure theme={null}
+    mkdir dev-marketplace
+    cd dev-marketplace
+    mkdir my-plugin
+    ```
+
+    This creates:
+
+    ```
+    dev-marketplace/
+    ├── .claude-plugin/marketplace.json  (you'll create this)
+    └── my-plugin/                        (your plugin under development)
+        ├── .claude-plugin/plugin.json
+        ├── commands/
+        ├── agents/
+        └── hooks/
+    ```
+
+  </Step>
+
+  <Step title="Create the marketplace manifest">
+    ```bash Create marketplace.json theme={null}
+    mkdir .claude-plugin
+    cat > .claude-plugin/marketplace.json << 'EOF'
+    {
+    "name": "dev-marketplace",
+    "owner": {
+    "name": "Developer"
+    },
+    "plugins": [
+    {
+      "name": "my-plugin",
+      "source": "./my-plugin",
+      "description": "Plugin under development"
+    }
+    ]
+    }
+    EOF
+    ```
+  </Step>
+
+  <Step title="Install and test">
+    ```bash Start Claude Code from parent directory theme={null}
+    cd ..
+    claude
+    ```
+
+    ```shell Add your development marketplace theme={null}
+    /plugin marketplace add ./dev-marketplace
+    ```
+
+    ```shell Install your plugin theme={null}
+    /plugin install my-plugin@dev-marketplace
+    ```
+
+    Test your plugin components:
+
+    * Try your commands with `/command-name`
+    * Check that agents appear in `/agents`
+    * Verify hooks work as expected
+
+  </Step>
+
+  <Step title="Iterate on your plugin">
+    After making changes to your plugin code:
+
+    ```shell Uninstall the current version theme={null}
+    /plugin uninstall my-plugin@dev-marketplace
+    ```
+
+    ```shell Reinstall to test changes theme={null}
+    /plugin install my-plugin@dev-marketplace
+    ```
+
+    Repeat this cycle as you develop and refine your plugin.
+
+  </Step>
+</Steps>
 
 <Note>
-  You can have both account types under the same email address. If you need to log in again or switch accounts, use the `/login` command within Claude Code.
+  **For multiple plugins**: Organize plugins in subdirectories like `./plugins/plugin-name` and update your marketplace.json accordingly. See [Plugin sources](/en/docs/claude-code/plugin-marketplaces#plugin-sources) for organization patterns.
 </Note>
 
-## Step 3: Start your first session
+### Debug plugin issues
 
-Open your terminal in any project directory and start Claude Code:
+If your plugin isn't working as expected:
 
-```bash theme={null}
-cd /path/to/your/project
-claude
-```
+1. **Check the structure**: Ensure your directories are at the plugin root, not inside `.claude-plugin/`
+2. **Test components individually**: Check each command, agent, and hook separately
+3. **Use validation and debugging tools**: See [Debugging and development tools](/en/docs/claude-code/plugins-reference#debugging-and-development-tools) for CLI commands and troubleshooting techniques
 
-You'll see the Claude Code welcome screen with your session information, recent conversations, and latest updates. Type `/help` for available commands or `/resume` to continue a previous conversation.
+### Share your plugins
 
-<Tip>
-  After logging in (Step 2), your credentials are stored on your system. Learn more in [Credential Management](/en/docs/claude-code/iam#credential-management).
-</Tip>
+When your plugin is ready to share:
 
-## Step 4: Ask your first question
-
-Let's start with understanding your codebase. Try one of these commands:
-
-```
-> what does this project do?
-```
-
-Claude will analyze your files and provide a summary. You can also ask more specific questions:
-
-```
-> what technologies does this project use?
-```
-
-```
-> where is the main entry point?
-```
-
-```
-> explain the folder structure
-```
-
-You can also ask Claude about its own capabilities:
-
-```
-> what can Claude Code do?
-```
-
-```
-> how do I use slash commands in Claude Code?
-```
-
-```
-> can Claude Code work with Docker?
-```
+1. **Add documentation**: Include a README.md with installation and usage instructions
+2. **Version your plugin**: Use semantic versioning in your `plugin.json`
+3. **Create or use a marketplace**: Distribute through plugin marketplaces for easy installation
+4. **Test with others**: Have team members test the plugin before wider distribution
 
 <Note>
-  Claude Code reads your files as needed - you don't have to manually add context. Claude also has access to its own documentation and can answer questions about its features and capabilities.
+  For complete technical specifications, debugging techniques, and distribution strategies, see [Plugins reference](/en/docs/claude-code/plugins-reference).
 </Note>
 
-## Step 5: Make your first code change
+---
 
-Now let's make Claude Code do some actual coding. Try a simple task:
+## Next steps
 
-```
-> add a hello world function to the main file
-```
+Now that you understand Claude Code's plugin system, here are suggested paths for different goals:
 
-Claude Code will:
+### For plugin users
 
-1. Find the appropriate file
-2. Show you the proposed changes
-3. Ask for your approval
-4. Make the edit
+- **Discover plugins**: Browse community marketplaces for useful tools
+- **Team adoption**: Set up repository-level plugins for your projects
+- **Marketplace management**: Learn to manage multiple plugin sources
+- **Advanced usage**: Explore plugin combinations and workflows
 
-<Note>
-  Claude Code always asks for permission before modifying files. You can approve individual changes or enable "Accept all" mode for a session.
-</Note>
+### For plugin developers
 
-## Step 6: Use Git with Claude Code
+- **Create your first marketplace**: [Plugin marketplaces guide](/en/docs/claude-code/plugin-marketplaces)
+- **Advanced components**: Dive deeper into specific plugin components:
+  - [Slash commands](/en/docs/claude-code/slash-commands) - Command development details
+  - [Subagents](/en/docs/claude-code/sub-agents) - Agent configuration and capabilities
+  - [Agent Skills](/en/docs/claude-code/skills) - Extend Claude's capabilities
+  - [Hooks](/en/docs/claude-code/hooks) - Event handling and automation
+  - [MCP](/en/docs/claude-code/mcp) - External tool integration
+- **Distribution strategies**: Package and share your plugins effectively
+- **Community contribution**: Consider contributing to community plugin collections
 
-Claude Code makes Git operations conversational:
+### For team leads and administrators
 
-```
-> what files have I changed?
-```
+- **Repository configuration**: Set up automatic plugin installation for team projects
+- **Plugin governance**: Establish guidelines for plugin approval and security review
+- **Marketplace maintenance**: Create and maintain organization-specific plugin catalogs
+- **Training and documentation**: Help team members adopt plugin workflows effectively
 
-```
-> commit my changes with a descriptive message
-```
+## See also
 
-You can also prompt for more complex Git operations:
-
-```
-> create a new branch called feature/quickstart
-```
-
-```
-> show me the last 5 commits
-```
-
-```
-> help me resolve merge conflicts
-```
-
-## Step 7: Fix a bug or add a feature
-
-Claude is proficient at debugging and feature implementation.
-
-Describe what you want in natural language:
-
-```
-> add input validation to the user registration form
-```
-
-Or fix existing issues:
-
-```
-> there's a bug where users can submit empty forms - fix it
-```
-
-Claude Code will:
-
-- Locate the relevant code
-- Understand the context
-- Implement a solution
-- Run tests if available
-
-## Step 8: Test out other common workflows
-
-There are a number of ways to work with Claude:
-
-**Refactor code**
-
-```
-> refactor the authentication module to use async/await instead of callbacks
-```
-
-**Write tests**
-
-```
-> write unit tests for the calculator functions
-```
-
-**Update documentation**
-
-```
-> update the README with installation instructions
-```
-
-**Code review**
-
-```
-> review my changes and suggest improvements
-```
-
-<Tip>
-  **Remember**: Claude Code is your AI pair programmer. Talk to it like you would a helpful colleague - describe what you want to achieve, and it will help you get there.
-</Tip>
-
-## Essential commands
-
-Here are the most important commands for daily use:
-
-| Command             | What it does                      | Example                             |
-| ------------------- | --------------------------------- | ----------------------------------- |
-| `claude`            | Start interactive mode            | `claude`                            |
-| `claude "task"`     | Run a one-time task               | `claude "fix the build error"`      |
-| `claude -p "query"` | Run one-off query, then exit      | `claude -p "explain this function"` |
-| `claude -c`         | Continue most recent conversation | `claude -c`                         |
-| `claude -r`         | Resume a previous conversation    | `claude -r`                         |
-| `claude commit`     | Create a Git commit               | `claude commit`                     |
-| `/clear`            | Clear conversation history        | `> /clear`                          |
-| `/help`             | Show available commands           | `> /help`                           |
-| `exit` or Ctrl+C    | Exit Claude Code                  | `> exit`                            |
-
-See the [CLI reference](/en/docs/claude-code/cli-reference) for a complete list of commands.
-
-## Pro tips for beginners
-
-<AccordionGroup>
-  <Accordion title="Be specific with your requests">
-    Instead of: "fix the bug"
-
-    Try: "fix the login bug where users see a blank screen after entering wrong credentials"
-
-  </Accordion>
-
-  <Accordion title="Use step-by-step instructions">
-    Break complex tasks into steps:
-
-    ```
-    > 1. create a new database table for user profiles
-    ```
-
-    ```
-    > 2. create an API endpoint to get and update user profiles
-    ```
-
-    ```
-    > 3. build a webpage that allows users to see and edit their information
-    ```
-
-  </Accordion>
-
-  <Accordion title="Let Claude explore first">
-    Before making changes, let Claude understand your code:
-
-    ```
-    > analyze the database schema
-    ```
-
-    ```
-    > build a dashboard showing products that are most frequently returned by our UK customers
-    ```
-
-  </Accordion>
-
-  <Accordion title="Save time with shortcuts">
-    * Press `?` to see all available keyboard shortcuts
-    * Use Tab for command completion
-    * Press ↑ for command history
-    * Type `/` to see all slash commands
-  </Accordion>
-</AccordionGroup>
-
-## What's next?
-
-Now that you've learned the basics, explore more advanced features:
-
-<CardGroup cols={3}>
-  <Card title="Common workflows" icon="graduation-cap" href="/en/docs/claude-code/common-workflows">
-    Step-by-step guides for common tasks
-  </Card>
-
-  <Card title="CLI reference" icon="terminal" href="/en/docs/claude-code/cli-reference">
-    Master all commands and options
-  </Card>
-
-  <Card title="Configuration" icon="gear" href="/en/docs/claude-code/settings">
-    Customize Claude Code for your workflow
-  </Card>
-</CardGroup>
-
-## Getting help
-
-- **In Claude Code**: Type `/help` or ask "how do I..."
-- **Documentation**: You're here! Browse other guides
-- **Community**: Join our [Discord](https://www.anthropic.com/discord) for tips and support
+- [Plugin marketplaces](/en/docs/claude-code/plugin-marketplaces) - Creating and managing plugin catalogs
+- [Slash commands](/en/docs/claude-code/slash-commands) - Understanding custom commands
+- [Subagents](/en/docs/claude-code/sub-agents) - Creating and using specialized agents
+- [Agent Skills](/en/docs/claude-code/skills) - Extend Claude's capabilities
+- [Hooks](/en/docs/claude-code/hooks) - Automating workflows with event handlers
+- [MCP](/en/docs/claude-code/mcp) - Connecting to external tools and services
+- [Settings](/en/docs/claude-code/settings) - Configuration options for plugins

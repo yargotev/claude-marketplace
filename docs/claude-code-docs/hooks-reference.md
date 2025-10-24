@@ -1,837 +1,973 @@
-# Hooks reference
+# Common workflows
 
-> This page provides reference documentation for implementing hooks in Claude Code.
+> Learn about common workflows with Claude Code.
+
+Each task in this document includes clear instructions, example commands, and best practices to help you get the most from Claude Code.
+
+## Understand new codebases
+
+### Get a quick codebase overview
+
+Suppose you've just joined a new project and need to understand its structure quickly.
+
+<Steps>
+  <Step title="Navigate to the project root directory">
+    ```bash  theme={null}
+    cd /path/to/project 
+    ```
+  </Step>
+
+  <Step title="Start Claude Code">
+    ```bash  theme={null}
+    claude 
+    ```
+  </Step>
+
+  <Step title="Ask for a high-level overview">
+    ```
+    > give me an overview of this codebase 
+    ```
+  </Step>
+
+  <Step title="Dive deeper into specific components">
+    ```
+    > explain the main architecture patterns used here 
+    ```
+
+    ```
+    > what are the key data models?
+    ```
+
+    ```
+    > how is authentication handled?
+    ```
+
+  </Step>
+</Steps>
 
 <Tip>
-  For a quickstart guide with examples, see [Get started with Claude Code hooks](/en/docs/claude-code/hooks-guide).
-</Tip>
-
-## Configuration
-
-Claude Code hooks are configured in your [settings files](/en/docs/claude-code/settings):
-
-- `~/.claude/settings.json` - User settings
-- `.claude/settings.json` - Project settings
-- `.claude/settings.local.json` - Local project settings (not committed)
-- Enterprise managed policy settings
-
-### Structure
-
-Hooks are organized by matchers, where each matcher can have multiple hooks:
-
-```json theme={null}
-{
-  "hooks": {
-    "EventName": [
-      {
-        "matcher": "ToolPattern",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "your-command-here"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-- **matcher**: Pattern to match tool names, case-sensitive (only applicable for
-  `PreToolUse` and `PostToolUse`)
-  - Simple strings match exactly: `Write` matches only the Write tool
-  - Supports regex: `Edit|Write` or `Notebook.*`
-  - Use `*` to match all tools. You can also use empty string (`""`) or leave
-    `matcher` blank.
-- **hooks**: Array of commands to execute when the pattern matches
-  - `type`: Currently only `"command"` is supported
-  - `command`: The bash command to execute (can use `$CLAUDE_PROJECT_DIR`
-    environment variable)
-  - `timeout`: (Optional) How long a command should run, in seconds, before
-    canceling that specific command.
-
-For events like `UserPromptSubmit`, `Notification`, `Stop`, and `SubagentStop`
-that don't use matchers, you can omit the matcher field:
-
-```json theme={null}
-{
-  "hooks": {
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/path/to/prompt-validator.py"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-### Project-Specific Hook Scripts
-
-You can use the environment variable `CLAUDE_PROJECT_DIR` (only available when
-Claude Code spawns the hook command) to reference scripts stored in your project,
-ensuring they work regardless of Claude's current directory:
-
-```json theme={null}
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-style.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-### Plugin hooks
-
-[Plugins](/en/docs/claude-code/plugins) can provide hooks that integrate seamlessly with your user and project hooks. Plugin hooks are automatically merged with your configuration when plugins are enabled.
-
-**How plugin hooks work**:
-
-- Plugin hooks are defined in the plugin's `hooks/hooks.json` file or in a file given by a custom path to the `hooks` field.
-- When a plugin is enabled, its hooks are merged with user and project hooks
-- Multiple hooks from different sources can respond to the same event
-- Plugin hooks use the `${CLAUDE_PLUGIN_ROOT}` environment variable to reference plugin files
-
-**Example plugin hook configuration**:
-
-```json theme={null}
-{
-  "description": "Automatic code formatting",
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/format.sh",
-            "timeout": 30
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-<Note>
-  Plugin hooks use the same format as regular hooks with an optional `description` field to explain the hook's purpose.
-</Note>
-
-<Note>
-  Plugin hooks run alongside your custom hooks. If multiple hooks match an event, they all execute in parallel.
-</Note>
-
-**Environment variables for plugins**:
-
-- `${CLAUDE_PLUGIN_ROOT}`: Absolute path to the plugin directory
-- `${CLAUDE_PROJECT_DIR}`: Project root directory (same as for project hooks)
-- All standard environment variables are available
-
-See the [plugin components reference](/en/docs/claude-code/plugins-reference#hooks) for details on creating plugin hooks.
-
-## Hook Events
-
-### PreToolUse
-
-Runs after Claude creates tool parameters and before processing the tool call.
-
-**Common matchers:**
-
-- `Task` - Subagent tasks (see [subagents documentation](/en/docs/claude-code/sub-agents))
-- `Bash` - Shell commands
-- `Glob` - File pattern matching
-- `Grep` - Content search
-- `Read` - File reading
-- `Edit` - File editing
-- `Write` - File writing
-- `WebFetch`, `WebSearch` - Web operations
-
-### PostToolUse
-
-Runs immediately after a tool completes successfully.
-
-Recognizes the same matcher values as PreToolUse.
-
-### Notification
-
-Runs when Claude Code sends notifications. Notifications are sent when:
-
-1. Claude needs your permission to use a tool. Example: "Claude needs your
-   permission to use Bash"
-2. The prompt input has been idle for at least 60 seconds. "Claude is waiting
-   for your input"
-
-### UserPromptSubmit
-
-Runs when the user submits a prompt, before Claude processes it. This allows you
-to add additional context based on the prompt/conversation, validate prompts, or
-block certain types of prompts.
-
-### Stop
-
-Runs when the main Claude Code agent has finished responding. Does not run if
-the stoppage occurred due to a user interrupt.
-
-### SubagentStop
-
-Runs when a Claude Code subagent (Task tool call) has finished responding.
-
-### PreCompact
-
-Runs before Claude Code is about to run a compact operation.
-
-**Matchers:**
-
-- `manual` - Invoked from `/compact`
-- `auto` - Invoked from auto-compact (due to full context window)
-
-### SessionStart
-
-Runs when Claude Code starts a new session or resumes an existing session (which
-currently does start a new session under the hood). Useful for loading in
-development context like existing issues or recent changes to your codebase.
-
-**Matchers:**
-
-- `startup` - Invoked from startup
-- `resume` - Invoked from `--resume`, `--continue`, or `/resume`
-- `clear` - Invoked from `/clear`
-- `compact` - Invoked from auto or manual compact.
-
-### SessionEnd
-
-Runs when a Claude Code session ends. Useful for cleanup tasks, logging session
-statistics, or saving session state.
-
-The `reason` field in the hook input will be one of:
-
-- `clear` - Session cleared with /clear command
-- `logout` - User logged out
-- `prompt_input_exit` - User exited while prompt input was visible
-- `other` - Other exit reasons
-
-## Hook Input
-
-Hooks receive JSON data via stdin containing session information and
-event-specific data:
-
-```typescript theme={null}
-{
-  // Common fields
-  session_id: string
-  transcript_path: string  // Path to conversation JSON
-  cwd: string              // The current working directory when the hook is invoked
-
-  // Event-specific fields
-  hook_event_name: string
-  ...
-}
-```
-
-### PreToolUse Input
-
-The exact schema for `tool_input` depends on the tool.
-
-```json theme={null}
-{
-  "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
-  "hook_event_name": "PreToolUse",
-  "tool_name": "Write",
-  "tool_input": {
-    "file_path": "/path/to/file.txt",
-    "content": "file content"
-  }
-}
-```
-
-### PostToolUse Input
-
-The exact schema for `tool_input` and `tool_response` depends on the tool.
-
-```json theme={null}
-{
-  "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
-  "hook_event_name": "PostToolUse",
-  "tool_name": "Write",
-  "tool_input": {
-    "file_path": "/path/to/file.txt",
-    "content": "file content"
-  },
-  "tool_response": {
-    "filePath": "/path/to/file.txt",
-    "success": true
-  }
-}
-```
-
-### Notification Input
-
-```json theme={null}
-{
-  "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
-  "hook_event_name": "Notification",
-  "message": "Task completed successfully"
-}
-```
-
-### UserPromptSubmit Input
-
-```json theme={null}
-{
-  "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
-  "hook_event_name": "UserPromptSubmit",
-  "prompt": "Write a function to calculate the factorial of a number"
-}
-```
-
-### Stop and SubagentStop Input
-
-`stop_hook_active` is true when Claude Code is already continuing as a result of
-a stop hook. Check this value or process the transcript to prevent Claude Code
-from running indefinitely.
-
-```json theme={null}
-{
-  "session_id": "abc123",
-  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "hook_event_name": "Stop",
-  "stop_hook_active": true
-}
-```
-
-### PreCompact Input
-
-For `manual`, `custom_instructions` comes from what the user passes into
-`/compact`. For `auto`, `custom_instructions` is empty.
-
-```json theme={null}
-{
-  "session_id": "abc123",
-  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "hook_event_name": "PreCompact",
-  "trigger": "manual",
-  "custom_instructions": ""
-}
-```
-
-### SessionStart Input
-
-```json theme={null}
-{
-  "session_id": "abc123",
-  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "hook_event_name": "SessionStart",
-  "source": "startup"
-}
-```
-
-### SessionEnd Input
-
-```json theme={null}
-{
-  "session_id": "abc123",
-  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
-  "hook_event_name": "SessionEnd",
-  "reason": "exit"
-}
-```
-
-## Hook Output
-
-There are two ways for hooks to return output back to Claude Code. The output
-communicates whether to block and any feedback that should be shown to Claude
-and the user.
-
-### Simple: Exit Code
-
-Hooks communicate status through exit codes, stdout, and stderr:
-
-- **Exit code 0**: Success. `stdout` is shown to the user in transcript mode
-  (CTRL-R), except for `UserPromptSubmit` and `SessionStart`, where stdout is
-  added to the context.
-- **Exit code 2**: Blocking error. `stderr` is fed back to Claude to process
-  automatically. See per-hook-event behavior below.
-- **Other exit codes**: Non-blocking error. `stderr` is shown to the user and
-  execution continues.
-
-<Warning>
-  Reminder: Claude Code does not see stdout if the exit code is 0, except for
-  the `UserPromptSubmit` hook where stdout is injected as context.
-</Warning>
-
-#### Exit Code 2 Behavior
-
-| Hook Event         | Behavior                                                           |
-| ------------------ | ------------------------------------------------------------------ |
-| `PreToolUse`       | Blocks the tool call, shows stderr to Claude                       |
-| `PostToolUse`      | Shows stderr to Claude (tool already ran)                          |
-| `Notification`     | N/A, shows stderr to user only                                     |
-| `UserPromptSubmit` | Blocks prompt processing, erases prompt, shows stderr to user only |
-| `Stop`             | Blocks stoppage, shows stderr to Claude                            |
-| `SubagentStop`     | Blocks stoppage, shows stderr to Claude subagent                   |
-| `PreCompact`       | N/A, shows stderr to user only                                     |
-| `SessionStart`     | N/A, shows stderr to user only                                     |
-| `SessionEnd`       | N/A, shows stderr to user only                                     |
-
-### Advanced: JSON Output
-
-Hooks can return structured JSON in `stdout` for more sophisticated control:
-
-#### Common JSON Fields
-
-All hook types can include these optional fields:
-
-```json theme={null}
-{
-  "continue": true, // Whether Claude should continue after hook execution (default: true)
-  "stopReason": "string", // Message shown when continue is false
-
-  "suppressOutput": true, // Hide stdout from transcript mode (default: false)
-  "systemMessage": "string" // Optional warning message shown to the user
-}
-```
-
-If `continue` is false, Claude stops processing after the hooks run.
-
-- For `PreToolUse`, this is different from `"permissionDecision": "deny"`, which
-  only blocks a specific tool call and provides automatic feedback to Claude.
-- For `PostToolUse`, this is different from `"decision": "block"`, which
-  provides automated feedback to Claude.
-- For `UserPromptSubmit`, this prevents the prompt from being processed.
-- For `Stop` and `SubagentStop`, this takes precedence over any
-  `"decision": "block"` output.
-- In all cases, `"continue" = false` takes precedence over any
-  `"decision": "block"` output.
-
-`stopReason` accompanies `continue` with a reason shown to the user, not shown
-to Claude.
-
-#### `PreToolUse` Decision Control
-
-`PreToolUse` hooks can control whether a tool call proceeds.
-
-- `"allow"` bypasses the permission system. `permissionDecisionReason` is shown
-  to the user but not to Claude.
-- `"deny"` prevents the tool call from executing. `permissionDecisionReason` is
-  shown to Claude.
-- `"ask"` asks the user to confirm the tool call in the UI.
-  `permissionDecisionReason` is shown to the user but not to Claude.
-
-```json theme={null}
-{
-  "hookSpecificOutput": {
-    "hookEventName": "PreToolUse",
-    "permissionDecision": "allow" | "deny" | "ask",
-    "permissionDecisionReason": "My reason here"
-  }
-}
-```
-
-<Note>
-  The `decision` and `reason` fields are deprecated for PreToolUse hooks.
-  Use `hookSpecificOutput.permissionDecision` and
-  `hookSpecificOutput.permissionDecisionReason` instead. The deprecated fields
-  `"approve"` and `"block"` map to `"allow"` and `"deny"` respectively.
-</Note>
-
-#### `PostToolUse` Decision Control
-
-`PostToolUse` hooks can provide feedback to Claude after tool execution.
-
-- `"block"` automatically prompts Claude with `reason`.
-- `undefined` does nothing. `reason` is ignored.
-- `"hookSpecificOutput.additionalContext"` adds context for Claude to consider.
-
-```json theme={null}
-{
-  "decision": "block" | undefined,
-  "reason": "Explanation for decision",
-  "hookSpecificOutput": {
-    "hookEventName": "PostToolUse",
-    "additionalContext": "Additional information for Claude"
-  }
-}
-```
-
-#### `UserPromptSubmit` Decision Control
-
-`UserPromptSubmit` hooks can control whether a user prompt is processed.
-
-- `"block"` prevents the prompt from being processed. The submitted prompt is
-  erased from context. `"reason"` is shown to the user but not added to context.
-- `undefined` allows the prompt to proceed normally. `"reason"` is ignored.
-- `"hookSpecificOutput.additionalContext"` adds the string to the context if not
-  blocked.
-
-```json theme={null}
-{
-  "decision": "block" | undefined,
-  "reason": "Explanation for decision",
-  "hookSpecificOutput": {
-    "hookEventName": "UserPromptSubmit",
-    "additionalContext": "My additional context here"
-  }
-}
-```
-
-#### `Stop`/`SubagentStop` Decision Control
-
-`Stop` and `SubagentStop` hooks can control whether Claude must continue.
-
-- `"block"` prevents Claude from stopping. You must populate `reason` for Claude
-  to know how to proceed.
-- `undefined` allows Claude to stop. `reason` is ignored.
-
-```json theme={null}
-{
-  "decision": "block" | undefined,
-  "reason": "Must be provided when Claude is blocked from stopping"
-}
-```
-
-#### `SessionStart` Decision Control
-
-`SessionStart` hooks allow you to load in context at the start of a session.
-
-- `"hookSpecificOutput.additionalContext"` adds the string to the context.
-- Multiple hooks' `additionalContext` values are concatenated.
-
-```json theme={null}
-{
-  "hookSpecificOutput": {
-    "hookEventName": "SessionStart",
-    "additionalContext": "My additional context here"
-  }
-}
-```
-
-#### `SessionEnd` Decision Control
-
-`SessionEnd` hooks run when a session ends. They cannot block session termination
-but can perform cleanup tasks.
-
-#### Exit Code Example: Bash Command Validation
-
-```python theme={null}
-#!/usr/bin/env python3
-import json
-import re
-import sys
-
-# Define validation rules as a list of (regex pattern, message) tuples
-VALIDATION_RULES = [
-    (
-        r"\bgrep\b(?!.*\|)",
-        "Use 'rg' (ripgrep) instead of 'grep' for better performance and features",
-    ),
-    (
-        r"\bfind\s+\S+\s+-name\b",
-        "Use 'rg --files | rg pattern' or 'rg --files -g pattern' instead of 'find -name' for better performance",
-    ),
-]
-
-
-def validate_command(command: str) -> list[str]:
-    issues = []
-    for pattern, message in VALIDATION_RULES:
-        if re.search(pattern, command):
-            issues.append(message)
-    return issues
-
-
-try:
-    input_data = json.load(sys.stdin)
-except json.JSONDecodeError as e:
-    print(f"Error: Invalid JSON input: {e}", file=sys.stderr)
-    sys.exit(1)
-
-tool_name = input_data.get("tool_name", "")
-tool_input = input_data.get("tool_input", {})
-command = tool_input.get("command", "")
-
-if tool_name != "Bash" or not command:
-    sys.exit(1)
-
-# Validate the command
-issues = validate_command(command)
-
-if issues:
-    for message in issues:
-        print(f"• {message}", file=sys.stderr)
-    # Exit code 2 blocks tool call and shows stderr to Claude
-    sys.exit(2)
-```
-
-#### JSON Output Example: UserPromptSubmit to Add Context and Validation
-
-<Note>
-  For `UserPromptSubmit` hooks, you can inject context using either method:
-
-- Exit code 0 with stdout: Claude sees the context (special case for `UserPromptSubmit`)
-- JSON output: Provides more control over the behavior
-  </Note>
-
-```python theme={null}
-#!/usr/bin/env python3
-import json
-import sys
-import re
-import datetime
-
-# Load input from stdin
-try:
-    input_data = json.load(sys.stdin)
-except json.JSONDecodeError as e:
-    print(f"Error: Invalid JSON input: {e}", file=sys.stderr)
-    sys.exit(1)
-
-prompt = input_data.get("prompt", "")
-
-# Check for sensitive patterns
-sensitive_patterns = [
-    (r"(?i)\b(password|secret|key|token)\s*[:=]", "Prompt contains potential secrets"),
-]
-
-for pattern, message in sensitive_patterns:
-    if re.search(pattern, prompt):
-        # Use JSON output to block with a specific reason
-        output = {
-            "decision": "block",
-            "reason": f"Security policy violation: {message}. Please rephrase your request without sensitive information."
-        }
-        print(json.dumps(output))
-        sys.exit(0)
-
-# Add current time to context
-context = f"Current time: {datetime.datetime.now()}"
-print(context)
-
-"""
-The following is also equivalent:
-print(json.dumps({
-  "hookSpecificOutput": {
-    "hookEventName": "UserPromptSubmit",
-    "additionalContext": context,
-  },
-}))
-"""
-
-# Allow the prompt to proceed with the additional context
-sys.exit(0)
-```
-
-#### JSON Output Example: PreToolUse with Approval
-
-```python theme={null}
-#!/usr/bin/env python3
-import json
-import sys
-
-# Load input from stdin
-try:
-    input_data = json.load(sys.stdin)
-except json.JSONDecodeError as e:
-    print(f"Error: Invalid JSON input: {e}", file=sys.stderr)
-    sys.exit(1)
-
-tool_name = input_data.get("tool_name", "")
-tool_input = input_data.get("tool_input", {})
-
-# Example: Auto-approve file reads for documentation files
-if tool_name == "Read":
-    file_path = tool_input.get("file_path", "")
-    if file_path.endswith((".md", ".mdx", ".txt", ".json")):
-        # Use JSON output to auto-approve the tool call
-        output = {
-            "decision": "approve",
-            "reason": "Documentation file auto-approved",
-            "suppressOutput": True  # Don't show in transcript mode
-        }
-        print(json.dumps(output))
-        sys.exit(0)
-
-# For other cases, let the normal permission flow proceed
-sys.exit(0)
-```
-
-## Working with MCP Tools
-
-Claude Code hooks work seamlessly with
-[Model Context Protocol (MCP) tools](/en/docs/claude-code/mcp). When MCP servers
-provide tools, they appear with a special naming pattern that you can match in
-your hooks.
-
-### MCP Tool Naming
-
-MCP tools follow the pattern `mcp__<server>__<tool>`, for example:
-
-- `mcp__memory__create_entities` - Memory server's create entities tool
-- `mcp__filesystem__read_file` - Filesystem server's read file tool
-- `mcp__github__search_repositories` - GitHub server's search tool
-
-### Configuring Hooks for MCP Tools
-
-You can target specific MCP tools or entire MCP servers:
-
-```json theme={null}
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "mcp__memory__.*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo 'Memory operation initiated' >> ~/mcp-operations.log"
-          }
-        ]
-      },
-      {
-        "matcher": "mcp__.*__write.*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/home/user/scripts/validate-mcp-write.py"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-## Examples
+  Tips:
+
+- Start with broad questions, then narrow down to specific areas
+- Ask about coding conventions and patterns used in the project
+- Request a glossary of project-specific terms
+  </Tip>
+
+### Find relevant code
+
+Suppose you need to locate code related to a specific feature or functionality.
+
+<Steps>
+  <Step title="Ask Claude to find relevant files">
+    ```
+    > find the files that handle user authentication 
+    ```
+  </Step>
+
+  <Step title="Get context on how components interact">
+    ```
+    > how do these authentication files work together? 
+    ```
+  </Step>
+
+  <Step title="Understand the execution flow">
+    ```
+    > trace the login process from front-end to database 
+    ```
+  </Step>
+</Steps>
 
 <Tip>
-  For practical examples including code formatting, notifications, and file protection, see [More Examples](/en/docs/claude-code/hooks-guide#more-examples) in the get started guide.
+  Tips:
+
+- Be specific about what you're looking for
+- Use domain language from the project
+  </Tip>
+
+---
+
+## Fix bugs efficiently
+
+Suppose you've encountered an error message and need to find and fix its source.
+
+<Steps>
+  <Step title="Share the error with Claude">
+    ```
+    > I'm seeing an error when I run npm test 
+    ```
+  </Step>
+
+  <Step title="Ask for fix recommendations">
+    ```
+    > suggest a few ways to fix the @ts-ignore in user.ts 
+    ```
+  </Step>
+
+  <Step title="Apply the fix">
+    ```
+    > update user.ts to add the null check you suggested 
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  Tips:
+
+- Tell Claude the command to reproduce the issue and get a stack trace
+- Mention any steps to reproduce the error
+- Let Claude know if the error is intermittent or consistent
+  </Tip>
+
+---
+
+## Refactor code
+
+Suppose you need to update old code to use modern patterns and practices.
+
+<Steps>
+  <Step title="Identify legacy code for refactoring">
+    ```
+    > find deprecated API usage in our codebase 
+    ```
+  </Step>
+
+  <Step title="Get refactoring recommendations">
+    ```
+    > suggest how to refactor utils.js to use modern JavaScript features 
+    ```
+  </Step>
+
+  <Step title="Apply the changes safely">
+    ```
+    > refactor utils.js to use ES2024 features while maintaining the same behavior 
+    ```
+  </Step>
+
+  <Step title="Verify the refactoring">
+    ```
+    > run tests for the refactored code 
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  Tips:
+
+- Ask Claude to explain the benefits of the modern approach
+- Request that changes maintain backward compatibility when needed
+- Do refactoring in small, testable increments
+  </Tip>
+
+---
+
+## Use specialized subagents
+
+Suppose you want to use specialized AI subagents to handle specific tasks more effectively.
+
+<Steps>
+  <Step title="View available subagents">
+    ```
+    > /agents
+    ```
+
+    This shows all available subagents and lets you create new ones.
+
+  </Step>
+
+  <Step title="Use subagents automatically">
+    Claude Code will automatically delegate appropriate tasks to specialized subagents:
+
+    ```
+    > review my recent code changes for security issues
+    ```
+
+    ```
+    > run all tests and fix any failures
+    ```
+
+  </Step>
+
+  <Step title="Explicitly request specific subagents">
+    ```
+    > use the code-reviewer subagent to check the auth module
+    ```
+
+    ```
+    > have the debugger subagent investigate why users can't log in
+    ```
+
+  </Step>
+
+  <Step title="Create custom subagents for your workflow">
+    ```
+    > /agents
+    ```
+
+    Then select "Create New subagent" and follow the prompts to define:
+
+    * Subagent type (e.g., `api-designer`, `performance-optimizer`)
+    * When to use it
+    * Which tools it can access
+    * Its specialized system prompt
+
+  </Step>
+</Steps>
+
+<Tip>
+  Tips:
+
+- Create project-specific subagents in `.claude/agents/` for team sharing
+- Use descriptive `description` fields to enable automatic delegation
+- Limit tool access to what each subagent actually needs
+- Check the [subagents documentation](/en/docs/claude-code/sub-agents) for detailed examples
+  </Tip>
+
+---
+
+## Use Plan Mode for safe code analysis
+
+Plan Mode instructs Claude to create a plan by analyzing the codebase with read-only operations, perfect for exploring codebases, planning complex changes, or reviewing code safely.
+
+### When to use Plan Mode
+
+- **Multi-step implementation**: When your feature requires making edits to many files
+- **Code exploration**: When you want to research the codebase thoroughly before changing anything
+- **Interactive development**: When you want to iterate on the direction with Claude
+
+### How to use Plan Mode
+
+**Turn on Plan Mode during a session**
+
+You can switch into Plan Mode during a session using **Shift+Tab** to cycle through permission modes.
+
+If you are in Normal Mode, **Shift+Tab** will first switch into Auto-Accept Mode, indicated by `⏵⏵ accept edits on` at the bottom of the terminal. A subsequent **Shift+Tab** will switch into Plan Mode, indicated by `⏸ plan mode on`.
+
+**Start a new session in Plan Mode**
+
+To start a new session in Plan Mode, use the `--permission-mode plan` flag:
+
+```bash theme={null}
+claude --permission-mode plan
+```
+
+**Run "headless" queries in Plan Mode**
+
+You can also run a query in Plan Mode directly with `-p` (i.e., in ["headless mode"](/en/docs/claude-code/sdk/sdk-headless)):
+
+```bash theme={null}
+claude --permission-mode plan -p "Analyze the authentication system and suggest improvements"
+```
+
+### Example: Planning a complex refactor
+
+```bash theme={null}
+claude --permission-mode plan
+```
+
+```
+> I need to refactor our authentication system to use OAuth2. Create a detailed migration plan.
+```
+
+Claude will analyze the current implementation and create a comprehensive plan. Refine with follow-ups:
+
+```
+> What about backward compatibility?
+> How should we handle database migration?
+```
+
+### Configure Plan Mode as default
+
+```json theme={null}
+// .claude/settings.json
+{
+  "permissions": {
+    "defaultMode": "plan"
+  }
+}
+```
+
+See [settings documentation](/en/docs/claude-code/settings#available-settings) for more configuration options.
+
+---
+
+## Work with tests
+
+Suppose you need to add tests for uncovered code.
+
+<Steps>
+  <Step title="Identify untested code">
+    ```
+    > find functions in NotificationsService.swift that are not covered by tests 
+    ```
+  </Step>
+
+  <Step title="Generate test scaffolding">
+    ```
+    > add tests for the notification service 
+    ```
+  </Step>
+
+  <Step title="Add meaningful test cases">
+    ```
+    > add test cases for edge conditions in the notification service 
+    ```
+  </Step>
+
+  <Step title="Run and verify tests">
+    ```
+    > run the new tests and fix any failures 
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  Tips:
+
+- Ask for tests that cover edge cases and error conditions
+- Request both unit and integration tests when appropriate
+- Have Claude explain the testing strategy
+  </Tip>
+
+---
+
+## Create pull requests
+
+Suppose you need to create a well-documented pull request for your changes.
+
+<Steps>
+  <Step title="Summarize your changes">
+    ```
+    > summarize the changes I've made to the authentication module 
+    ```
+  </Step>
+
+  <Step title="Generate a PR with Claude">
+    ```
+    > create a pr 
+    ```
+  </Step>
+
+  <Step title="Review and refine">
+    ```
+    > enhance the PR description with more context about the security improvements 
+    ```
+  </Step>
+
+  <Step title="Add testing details">
+    ```
+    > add information about how these changes were tested 
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  Tips:
+
+- Ask Claude directly to make a PR for you
+- Review Claude's generated PR before submitting
+- Ask Claude to highlight potential risks or considerations
+  </Tip>
+
+## Handle documentation
+
+Suppose you need to add or update documentation for your code.
+
+<Steps>
+  <Step title="Identify undocumented code">
+    ```
+    > find functions without proper JSDoc comments in the auth module 
+    ```
+  </Step>
+
+  <Step title="Generate documentation">
+    ```
+    > add JSDoc comments to the undocumented functions in auth.js 
+    ```
+  </Step>
+
+  <Step title="Review and enhance">
+    ```
+    > improve the generated documentation with more context and examples 
+    ```
+  </Step>
+
+  <Step title="Verify documentation">
+    ```
+    > check if the documentation follows our project standards 
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  Tips:
+
+- Specify the documentation style you want (JSDoc, docstrings, etc.)
+- Ask for examples in the documentation
+- Request documentation for public APIs, interfaces, and complex logic
+  </Tip>
+
+---
+
+## Work with images
+
+Suppose you need to work with images in your codebase, and you want Claude's help analyzing image content.
+
+<Steps>
+  <Step title="Add an image to the conversation">
+    You can use any of these methods:
+
+    1. Drag and drop an image into the Claude Code window
+    2. Copy an image and paste it into the CLI with ctrl+v (Do not use cmd+v)
+    3. Provide an image path to Claude. E.g., "Analyze this image: /path/to/your/image.png"
+
+  </Step>
+
+  <Step title="Ask Claude to analyze the image">
+    ```
+    > What does this image show?
+    ```
+
+    ```
+    > Describe the UI elements in this screenshot
+    ```
+
+    ```
+    > Are there any problematic elements in this diagram?
+    ```
+
+  </Step>
+
+  <Step title="Use images for context">
+    ```
+    > Here's a screenshot of the error. What's causing it?
+    ```
+
+    ```
+    > This is our current database schema. How should we modify it for the new feature?
+    ```
+
+  </Step>
+
+  <Step title="Get code suggestions from visual content">
+    ```
+    > Generate CSS to match this design mockup
+    ```
+
+    ```
+    > What HTML structure would recreate this component?
+    ```
+
+  </Step>
+</Steps>
+
+<Tip>
+  Tips:
+
+- Use images when text descriptions would be unclear or cumbersome
+- Include screenshots of errors, UI designs, or diagrams for better context
+- You can work with multiple images in a conversation
+- Image analysis works with diagrams, screenshots, mockups, and more
+  </Tip>
+
+---
+
+## Reference files and directories
+
+Use @ to quickly include files or directories without waiting for Claude to read them.
+
+<Steps>
+  <Step title="Reference a single file">
+    ```
+    > Explain the logic in @src/utils/auth.js
+    ```
+
+    This includes the full content of the file in the conversation.
+
+  </Step>
+
+  <Step title="Reference a directory">
+    ```
+    > What's the structure of @src/components?
+    ```
+
+    This provides a directory listing with file information.
+
+  </Step>
+
+  <Step title="Reference MCP resources">
+    ```
+    > Show me the data from @github:repos/owner/repo/issues
+    ```
+
+    This fetches data from connected MCP servers using the format @server:resource. See [MCP resources](/en/docs/claude-code/mcp#use-mcp-resources) for details.
+
+  </Step>
+</Steps>
+
+<Tip>
+  Tips:
+
+- File paths can be relative or absolute
+- @ file references add CLAUDE.md in the file's directory and parent directories to context
+- Directory references show file listings, not contents
+- You can reference multiple files in a single message (e.g., "@file1.js and @file2.js")
+  </Tip>
+
+---
+
+## Use extended thinking
+
+Suppose you're working on complex architectural decisions, challenging bugs, or planning multi-step implementations that require deep reasoning.
+
+<Note>
+  [Extended thinking](/en/docs/build-with-claude/extended-thinking) is disabled by default in Claude Code. You can enable it on-demand by using `Tab` to toggle Thinking on, or by using prompts like "think" or "think hard". You can also enable it permanently by setting the [`MAX_THINKING_TOKENS` environment variable](/en/docs/claude-code/settings#environment-variables) in your settings.
+</Note>
+
+<Steps>
+  <Step title="Provide context and ask Claude to think">
+    ```
+    > I need to implement a new authentication system using OAuth2 for our API. Think deeply about the best approach for implementing this in our codebase.
+    ```
+
+    Claude will gather relevant information from your codebase and
+    use extended thinking, which will be visible in the interface.
+
+  </Step>
+
+  <Step title="Refine the thinking with follow-up prompts">
+    ```
+    > think about potential security vulnerabilities in this approach 
+    ```
+
+    ```
+    > think hard about edge cases we should handle
+    ```
+
+  </Step>
+</Steps>
+
+<Tip>
+  Tips to get the most value out of extended thinking:
+
+[Extended thinking](/en/docs/build-with-claude/extended-thinking) is most valuable for complex tasks such as:
+
+- Planning complex architectural changes
+- Debugging intricate issues
+- Creating implementation plans for new features
+- Understanding complex codebases
+- Evaluating tradeoffs between different approaches
+
+Use `Tab` to toggle Thinking on and off during a session.
+
+The way you prompt for thinking results in varying levels of thinking depth:
+
+- "think" triggers basic extended thinking
+- intensifying phrases such as "keep hard", "think more", "think a lot", or "think longer" triggers deeper thinking
+
+For more extended thinking prompting tips, see [Extended thinking tips](/en/docs/build-with-claude/prompt-engineering/extended-thinking-tips).
 </Tip>
 
-## Security Considerations
+<Note>
+  Claude will display its thinking process as italic gray text above the
+  response.
+</Note>
 
-### Disclaimer
+---
 
-**USE AT YOUR OWN RISK**: Claude Code hooks execute arbitrary shell commands on
-your system automatically. By using hooks, you acknowledge that:
+## Resume previous conversations
 
-- You are solely responsible for the commands you configure
-- Hooks can modify, delete, or access any files your user account can access
-- Malicious or poorly written hooks can cause data loss or system damage
-- Anthropic provides no warranty and assumes no liability for any damages
-  resulting from hook usage
-- You should thoroughly test hooks in a safe environment before production use
+Suppose you've been working on a task with Claude Code and need to continue where you left off in a later session.
 
-Always review and understand any hook commands before adding them to your
-configuration.
+Claude Code provides two options for resuming previous conversations:
 
-### Security Best Practices
+- `--continue` to automatically continue the most recent conversation
+- `--resume` to display a conversation picker
 
-Here are some key practices for writing more secure hooks:
+<Steps>
+  <Step title="Continue the most recent conversation">
+    ```bash  theme={null}
+    claude --continue
+    ```
 
-1. **Validate and sanitize inputs** - Never trust input data blindly
-2. **Always quote shell variables** - Use `"$VAR"` not `$VAR`
-3. **Block path traversal** - Check for `..` in file paths
-4. **Use absolute paths** - Specify full paths for scripts (use
-   "\$CLAUDE_PROJECT_DIR" for the project path)
-5. **Skip sensitive files** - Avoid `.env`, `.git/`, keys, etc.
+    This immediately resumes your most recent conversation without any prompts.
 
-### Configuration Safety
+  </Step>
 
-Direct edits to hooks in settings files don't take effect immediately. Claude
-Code:
+  <Step title="Continue in non-interactive mode">
+    ```bash  theme={null}
+    claude --continue --print "Continue with my task"
+    ```
 
-1. Captures a snapshot of hooks at startup
-2. Uses this snapshot throughout the session
-3. Warns if hooks are modified externally
-4. Requires review in `/hooks` menu for changes to apply
+    Use `--print` with `--continue` to resume the most recent conversation in non-interactive mode, perfect for scripts or automation.
 
-This prevents malicious hook modifications from affecting your current session.
+  </Step>
 
-## Hook Execution Details
+  <Step title="Show conversation picker">
+    ```bash  theme={null}
+    claude --resume
+    ```
 
-- **Timeout**: 60-second execution limit by default, configurable per command.
-  - A timeout for an individual command does not affect the other commands.
-- **Parallelization**: All matching hooks run in parallel
-- **Deduplication**: Multiple identical hook commands are deduplicated automatically
-- **Environment**: Runs in current directory with Claude Code's environment
-  - The `CLAUDE_PROJECT_DIR` environment variable is available and contains the
-    absolute path to the project root directory (where Claude Code was started)
-- **Input**: JSON via stdin
-- **Output**:
-  - PreToolUse/PostToolUse/Stop/SubagentStop: Progress shown in transcript (Ctrl-R)
-  - Notification/SessionEnd: Logged to debug only (`--debug`)
-  - UserPromptSubmit/SessionStart: stdout added as context for Claude
+    This displays an interactive conversation selector with a clean list view showing:
 
-## Debugging
+    * Session summary (or initial prompt)
+    * Metadata: time elapsed, message count, and git branch
 
-### Basic Troubleshooting
+    Use arrow keys to navigate and press Enter to select a conversation. Press Esc to exit.
 
-If your hooks aren't working:
+  </Step>
+</Steps>
 
-1. **Check configuration** - Run `/hooks` to see if your hook is registered
-2. **Verify syntax** - Ensure your JSON settings are valid
-3. **Test commands** - Run hook commands manually first
-4. **Check permissions** - Make sure scripts are executable
-5. **Review logs** - Use `claude --debug` to see hook execution details
+<Tip>
+  Tips:
 
-Common issues:
+- Conversation history is stored locally on your machine
+- Use `--continue` for quick access to your most recent conversation
+- Use `--resume` when you need to select a specific past conversation
+- When resuming, you'll see the entire conversation history before continuing
+- The resumed conversation starts with the same model and configuration as the original
 
-- **Quotes not escaped** - Use `\"` inside JSON strings
-- **Wrong matcher** - Check tool names match exactly (case-sensitive)
-- **Command not found** - Use full paths for scripts
+How it works:
 
-### Advanced Debugging
+1. **Conversation Storage**: All conversations are automatically saved locally with their full message history
+2. **Message Deserialization**: When resuming, the entire message history is restored to maintain context
+3. **Tool State**: Tool usage and results from the previous conversation are preserved
+4. **Context Restoration**: The conversation resumes with all previous context intact
 
-For complex hook issues:
+Examples:
 
-1. **Inspect hook execution** - Use `claude --debug` to see detailed hook
-   execution
-2. **Validate JSON schemas** - Test hook input/output with external tools
-3. **Check environment variables** - Verify Claude Code's environment is correct
-4. **Test edge cases** - Try hooks with unusual file paths or inputs
-5. **Monitor system resources** - Check for resource exhaustion during hook
-   execution
-6. **Use structured logging** - Implement logging in your hook scripts
+```bash theme={null}
+# Continue most recent conversation
+claude --continue
 
-### Debug Output Example
+# Continue most recent conversation with a specific prompt
+claude --continue --print "Show me our progress"
 
-Use `claude --debug` to see hook execution details:
+# Show conversation picker
+claude --resume
 
-```
-[DEBUG] Executing hooks for PostToolUse:Write
-[DEBUG] Getting matching hook commands for PostToolUse with query: Write
-[DEBUG] Found 1 hook matchers in settings
-[DEBUG] Matched 1 hooks for query "Write"
-[DEBUG] Found 1 hook commands to execute
-[DEBUG] Executing hook command: <Your command> with timeout 60000ms
-[DEBUG] Hook command completed with status 0: <Your stdout>
+# Continue most recent conversation in non-interactive mode
+claude --continue --print "Run the tests again"
 ```
 
-Progress messages appear in transcript mode (Ctrl-R) showing:
+</Tip>
 
-- Which hook is running
-- Command being executed
-- Success/failure status
-- Output or error messages
+---
+
+## Run parallel Claude Code sessions with Git worktrees
+
+Suppose you need to work on multiple tasks simultaneously with complete code isolation between Claude Code instances.
+
+<Steps>
+  <Step title="Understand Git worktrees">
+    Git worktrees allow you to check out multiple branches from the same
+    repository into separate directories. Each worktree has its own working
+    directory with isolated files, while sharing the same Git history. Learn
+    more in the [official Git worktree
+    documentation](https://git-scm.com/docs/git-worktree).
+  </Step>
+
+  <Step title="Create a new worktree">
+    ```bash  theme={null}
+    # Create a new worktree with a new branch 
+    git worktree add ../project-feature-a -b feature-a
+
+    # Or create a worktree with an existing branch
+    git worktree add ../project-bugfix bugfix-123
+    ```
+
+    This creates a new directory with a separate working copy of your repository.
+
+  </Step>
+
+  <Step title="Run Claude Code in each worktree">
+    ```bash  theme={null}
+    # Navigate to your worktree 
+    cd ../project-feature-a
+
+    # Run Claude Code in this isolated environment
+    claude
+    ```
+
+  </Step>
+
+  <Step title="Run Claude in another worktree">
+    ```bash  theme={null}
+    cd ../project-bugfix
+    claude
+    ```
+  </Step>
+
+  <Step title="Manage your worktrees">
+    ```bash  theme={null}
+    # List all worktrees
+    git worktree list
+
+    # Remove a worktree when done
+    git worktree remove ../project-feature-a
+    ```
+
+  </Step>
+</Steps>
+
+<Tip>
+  Tips:
+
+- Each worktree has its own independent file state, making it perfect for parallel Claude Code sessions
+- Changes made in one worktree won't affect others, preventing Claude instances from interfering with each other
+- All worktrees share the same Git history and remote connections
+- For long-running tasks, you can have Claude working in one worktree while you continue development in another
+- Use descriptive directory names to easily identify which task each worktree is for
+- Remember to initialize your development environment in each new worktree according to your project's setup. Depending on your stack, this might include:
+  _ JavaScript projects: Running dependency installation (`npm install`, `yarn`)
+  _ Python projects: Setting up virtual environments or installing with package managers \* Other languages: Following your project's standard setup process
+  </Tip>
+
+---
+
+## Use Claude as a unix-style utility
+
+### Add Claude to your verification process
+
+Suppose you want to use Claude Code as a linter or code reviewer.
+
+**Add Claude to your build script:**
+
+```json theme={null}
+// package.json
+{
+    ...
+    "scripts": {
+        ...
+        "lint:claude": "claude -p 'you are a linter. please look at the changes vs. main and report any issues related to typos. report the filename and line number on one line, and a description of the issue on the second line. do not return any other text.'"
+    }
+}
+```
+
+<Tip>
+  Tips:
+
+- Use Claude for automated code review in your CI/CD pipeline
+- Customize the prompt to check for specific issues relevant to your project
+- Consider creating multiple scripts for different types of verification
+  </Tip>
+
+### Pipe in, pipe out
+
+Suppose you want to pipe data into Claude, and get back data in a structured format.
+
+**Pipe data through Claude:**
+
+```bash theme={null}
+cat build-error.txt | claude -p 'concisely explain the root cause of this build error' > output.txt
+```
+
+<Tip>
+  Tips:
+
+- Use pipes to integrate Claude into existing shell scripts
+- Combine with other Unix tools for powerful workflows
+- Consider using --output-format for structured output
+  </Tip>
+
+### Control output format
+
+Suppose you need Claude's output in a specific format, especially when integrating Claude Code into scripts or other tools.
+
+<Steps>
+  <Step title="Use text format (default)">
+    ```bash  theme={null}
+    cat data.txt | claude -p 'summarize this data' --output-format text > summary.txt
+    ```
+
+    This outputs just Claude's plain text response (default behavior).
+
+  </Step>
+
+  <Step title="Use JSON format">
+    ```bash  theme={null}
+    cat code.py | claude -p 'analyze this code for bugs' --output-format json > analysis.json
+    ```
+
+    This outputs a JSON array of messages with metadata including cost and duration.
+
+  </Step>
+
+  <Step title="Use streaming JSON format">
+    ```bash  theme={null}
+    cat log.txt | claude -p 'parse this log file for errors' --output-format stream-json
+    ```
+
+    This outputs a series of JSON objects in real-time as Claude processes the request. Each message is a valid JSON object, but the entire output is not valid JSON if concatenated.
+
+  </Step>
+</Steps>
+
+<Tip>
+  Tips:
+
+- Use `--output-format text` for simple integrations where you just need Claude's response
+- Use `--output-format json` when you need the full conversation log
+- Use `--output-format stream-json` for real-time output of each conversation turn
+  </Tip>
+
+---
+
+## Create custom slash commands
+
+Claude Code supports custom slash commands that you can create to quickly execute specific prompts or tasks.
+
+For more details, see the [Slash commands](/en/docs/claude-code/slash-commands) reference page.
+
+### Create project-specific commands
+
+Suppose you want to create reusable slash commands for your project that all team members can use.
+
+<Steps>
+  <Step title="Create a commands directory in your project">
+    ```bash  theme={null}
+    mkdir -p .claude/commands
+    ```
+  </Step>
+
+  <Step title="Create a Markdown file for each command">
+    ```bash  theme={null}
+    echo "Analyze the performance of this code and suggest three specific optimizations:" > .claude/commands/optimize.md 
+    ```
+  </Step>
+
+  <Step title="Use your custom command in Claude Code">
+    ```
+    > /optimize 
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  Tips:
+
+- Command names are derived from the filename (e.g., `optimize.md` becomes `/optimize`)
+- You can organize commands in subdirectories (e.g., `.claude/commands/frontend/component.md` creates `/component` with "(project:frontend)" shown in the description)
+- Project commands are available to everyone who clones the repository
+- The Markdown file content becomes the prompt sent to Claude when the command is invoked
+  </Tip>
+
+### Add command arguments with \$ARGUMENTS
+
+Suppose you want to create flexible slash commands that can accept additional input from users.
+
+<Steps>
+  <Step title="Create a command file with the $ARGUMENTS placeholder">
+    ```bash  theme={null}
+    echo 'Find and fix issue #$ARGUMENTS. Follow these steps: 1.
+    Understand the issue described in the ticket 2. Locate the relevant code in
+    our codebase 3. Implement a solution that addresses the root cause 4. Add
+    appropriate tests 5. Prepare a concise PR description' >
+    .claude/commands/fix-issue.md 
+    ```
+  </Step>
+
+  <Step title="Use the command with an issue number">
+    In your Claude session, use the command with arguments.
+
+    ```
+    > /fix-issue 123
+    ```
+
+    This will replace \$ARGUMENTS with "123" in the prompt.
+
+  </Step>
+</Steps>
+
+<Tip>
+  Tips:
+
+- The \$ARGUMENTS placeholder is replaced with any text that follows the command
+- You can position \$ARGUMENTS anywhere in your command template
+- Other useful applications: generating test cases for specific functions, creating documentation for components, reviewing code in particular files, or translating content to specified languages
+  </Tip>
+
+### Create personal slash commands
+
+Suppose you want to create personal slash commands that work across all your projects.
+
+<Steps>
+  <Step title="Create a commands directory in your home folder">
+    ```bash  theme={null}
+    mkdir -p ~/.claude/commands 
+    ```
+  </Step>
+
+  <Step title="Create a Markdown file for each command">
+    ```bash  theme={null}
+    echo "Review this code for security vulnerabilities, focusing on:" >
+    ~/.claude/commands/security-review.md 
+    ```
+  </Step>
+
+  <Step title="Use your personal custom command">
+    ```
+    > /security-review 
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  Tips:
+
+- Personal commands show "(user)" in their description when listed with `/help`
+- Personal commands are only available to you and not shared with your team
+- Personal commands work across all your projects
+- You can use these for consistent workflows across different codebases
+  </Tip>
+
+---
+
+## Ask Claude about its capabilities
+
+Claude has built-in access to its documentation and can answer questions about its own features and limitations.
+
+### Example questions
+
+```
+> can Claude Code create pull requests?
+```
+
+```
+> how does Claude Code handle permissions?
+```
+
+```
+> what slash commands are available?
+```
+
+```
+> how do I use MCP with Claude Code?
+```
+
+```
+> how do I configure Claude Code for Amazon Bedrock?
+```
+
+```
+> what are the limitations of Claude Code?
+```
+
+<Note>
+  Claude provides documentation-based answers to these questions. For executable examples and hands-on demonstrations, refer to the specific workflow sections above.
+</Note>
+
+<Tip>
+  Tips:
+
+- Claude always has access to the latest Claude Code documentation, regardless of the version you're using
+- Ask specific questions to get detailed answers
+- Claude can explain complex features like MCP integration, enterprise configurations, and advanced workflows
+  </Tip>
+
+---
+
+## Next steps
+
+<Card title="Claude Code reference implementation" icon="code" href="https://github.com/anthropics/claude-code/tree/main/.devcontainer">
+  Clone our development container reference implementation.
+</Card>
