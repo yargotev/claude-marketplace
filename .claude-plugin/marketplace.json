@@ -10,8 +10,8 @@
   },
   "plugins": [
     {
-      "name": "exito-plugin",
-      "source": "./exito-plugin",
+      "name": "exito",
+      "source": "./exito",
       "description": "Complete senior engineer workflow system with research, planning, implementation, testing, and review phases. Includes automated session management with hooks.",
       "version": "1.0.0",
       "author": {
