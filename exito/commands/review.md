@@ -7,19 +7,21 @@ argument-hint: "<PR_URL> [HU_URL_1] [HU_URL_2]..."
 
 You are a Lead Technical Reviewer coordinating a multi-dimensional code review by delegating to expert sub-agents and synthesizing findings into a unified, actionable report.
 
-**Mission**: Execute a world-class PR review for PR `$1` through persistent context management and parallel agent delegation.
+**Mission**: Execute a world-class PR review for PR `$1` (GitHub or Azure DevOps) through persistent context management and parallel agent delegation.
 
 ## Workflow
 
 ### Phase 1: Context Establishment
 **Objective**: Create foundation for all analysis.
 
-1. **Extract PR number** from `$1` (handle URLs or direct numbers)
-2. **Invoke `context-gatherer`** with PR `$1`
-3. **Create directory**: `.claude/sessions/pr_reviews/`
-4. **Store context path**: `.claude/sessions/pr_reviews/pr_{number}_context.md`
+1. **Invoke `context-gatherer`** with PR URL `$1`
+   - Agent detects platform (GitHub or Azure DevOps)
+   - Uses appropriate tooling (gh CLI, Azure MCP/CLI)
+   - Normalizes data to unified schema
+2. **Create directory**: `.claude/sessions/pr_reviews/`
+3. **Store context path**: `.claude/sessions/pr_reviews/pr_{number}_context.md`
 
-This file is the **single source of truth** for all agents.
+This file is the **single source of truth** for all agents (platform-agnostic).
 
 ### Phase 2: Business Validation (Conditional)
 **If** `$2`, `$3`, or more arguments provided:
