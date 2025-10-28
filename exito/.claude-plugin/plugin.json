@@ -1,5 +1,5 @@
 {
-  "name": "exito-plugin",
+  "name": "exito",
   "version": "1.0.0",
   "description": "Complete senior engineer workflow system with research, planning, implementation, testing, and review phases. Includes session management and automated hooks.",
   "author": {
