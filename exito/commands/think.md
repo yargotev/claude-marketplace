@@ -23,7 +23,7 @@ I'll take extra time to think deeply at every stage.
 
 Starting with comprehensive research...
 
-<Task agent="research-engineer">
+<Task agent="investigator">
   DEEP RESEARCH MODE - Analyze everything relevant for: $ARGUMENTS
   
   Session directory: .claude/sessions/tasks/{{timestamp}}
@@ -47,7 +47,7 @@ Starting with comprehensive research...
 
 Now entering ULTRATHINK mode for solution design...
 
-<Task agent="planner-engineer">
+<Task agent="architect">
   **ULTRATHINK MODE ACTIVATED** 🧠⚡
   
   Design the optimal solution plan for: $ARGUMENTS
@@ -110,7 +110,7 @@ Take your time to review - this is important work.
 
 ## Implementation Starting with Precision ✓
 
-<Task agent="implementer-engineer">
+<Task agent="builder">
   Execute the implementation plan with MAXIMUM CARE for: $ARGUMENTS
   
   Session directory: .claude/sessions/tasks/{{timestamp}}
@@ -142,7 +142,7 @@ Take your time to review - this is important work.
 
 Running comprehensive validation...
 
-<Task agent="tester-engineer">
+<Task agent="validator">
   THOROUGH VALIDATION MODE for: $ARGUMENTS
   
   Session directory: .claude/sessions/tasks/{{timestamp}}
@@ -175,7 +175,7 @@ Running comprehensive validation...
 
 Final comprehensive code review...
 
-<Task agent="reviewer-engineer">
+<Task agent="auditor">
   STAFF-LEVEL CODE REVIEW for: $ARGUMENTS
   
   Session directory: .claude/sessions/tasks/{{timestamp}}

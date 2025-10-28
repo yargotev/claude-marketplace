@@ -6,6 +6,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Claude Code plugin that provides comprehensive PR review commands for FastStore/VTEX e-commerce development at Exito. The plugin is distributed via marketplace and uses an agent-based architecture to perform multi-dimensional code analysis.
 
+## Nomenclature (Updated 2025)
+
+The plugin uses clear, action-oriented names for all commands and agents:
+
+### Commands (User-facing)
+- **/build** - Full-cycle feature development (formerly `/inge`)
+- **/think** - Deep architectural analysis with ULTRATHINK mode (formerly `/senior`)
+- **/ui** - Frontend/UI specialist workflow (formerly `/frontend`)
+- **/patch** - Quick fixes and simple changes (formerly `/quick-fix`)
+- **/review** - Comprehensive PR review orchestrator
+- **/review-perf** - Performance-focused PR review
+- **/review-sec** - Security-focused PR review
+
+### Agents (Internal)
+- **investigator** - Codebase research & context gathering (formerly `research-engineer`)
+- **architect** - Solution design & planning (formerly `planner-engineer`)
+- **builder** - Code implementation & execution (formerly `implementer-engineer`)
+- **validator** - Testing & quality assurance (formerly `tester-engineer`)
+- **auditor** - Final code review & approval (formerly `reviewer-engineer`)
+
+**Rationale**: The new names eliminate redundancy ("-engineer" suffix), improve clarity (action verbs for commands), and make the system more intuitive for new users.
+
 ## Installation & Setup
 
 To test the plugin after making changes:
@@ -33,10 +55,19 @@ exito-plugin/
 ├── .claude-plugin/              # Plugin metadata
 │   └── plugin.json              # Plugin configuration
 ├── commands/                    # User-facing slash commands
-│   ├── review.md                # Main orchestrator command (IMPROVED with persistence)
+│   ├── build.md                 # Full feature builder (ex-inge)
+│   ├── think.md                 # Deep architectural thinking (ex-senior)
+│   ├── ui.md                    # Frontend/UI specialist (ex-frontend)
+│   ├── patch.md                 # Quick fixes (ex-quick-fix)
+│   ├── review.md                # PR review orchestrator
 │   ├── review-perf.md           # Performance-focused review
 │   └── review-sec.md            # Security-focused review
-├── agents/                      # Specialized sub-agents (ALL IMPROVED)
+├── agents/                      # Specialized sub-agents
+│   ├── investigator.md            # Context & research (ex-research-engineer)
+│   ├── architect.md               # Solution design & planning (ex-planner-engineer)
+│   ├── builder.md                 # Code implementation (ex-implementer-engineer)
+│   ├── validator.md               # Testing & QA (ex-tester-engineer)
+│   ├── auditor.md                 # Final code review (ex-reviewer-engineer)
 │   ├── 1-context-gatherer.md      # PR metadata & diff collection
 │   ├── 2-business-validator.md    # Azure DevOps integration
 │   ├── 3-performance-analyzer.md  # React/Next.js performance

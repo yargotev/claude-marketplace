@@ -23,7 +23,7 @@ Use this for:
 - Security-critical work
 - Performance optimization
 
-For those, use `/inge` or `/senior` instead.
+For those, use `/build` or `/think` instead.
 
 ---
 
@@ -31,7 +31,7 @@ For those, use `/inge` or `/senior` instead.
 
 Gathering necessary context...
 
-<Task agent="research-engineer">
+<Task agent="investigator">
   Quick context gathering for: $ARGUMENTS
   
   Session directory: .claude/sessions/tasks/{{timestamp}}
@@ -54,7 +54,7 @@ Gathering necessary context...
 
 Quick solution analysis...
 
-<Task agent="planner-engineer">
+<Task agent="architect">
   Quick fix plan for: $ARGUMENTS
   
   Session directory: .claude/sessions/tasks/{{timestamp}}
@@ -79,7 +79,7 @@ Quick solution analysis...
 
 ## Implementing the fix ✓
 
-<Task agent="implementer-engineer">
+<Task agent="builder">
   Execute quick fix for: $ARGUMENTS
   
   Session directory: .claude/sessions/tasks/{{timestamp}}
@@ -103,7 +103,7 @@ Quick solution analysis...
 
 ## Testing the fix ✓
 
-<Task agent="tester-engineer">
+<Task agent="validator">
   Validate quick fix for: $ARGUMENTS
   
   Session directory: .claude/sessions/tasks/{{timestamp}}
@@ -154,6 +154,6 @@ Quick solution analysis...
 
 Fast and focused! ⚡ 
 
-Need something more complex? Use `/inge` or `/senior` instead.
+Need something more complex? Use `/build` or `/think` instead.
 
 Thank you! 🚀

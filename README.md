@@ -70,43 +70,43 @@ The `review` plugin provides a suite of commands for comprehensive PR analysis:
 
 AI-powered engineering assistants that investigate, plan, implement, and validate features following a professional workflow:
 
-#### `/inge` - Universal Senior Engineer
+#### `/build` - Full Feature Builder
 
-**Purpose**: Your default command for implementing features and making significant changes. Follows a complete workflow: research → plan → **YOUR APPROVAL** → implement → test → review.
+**Purpose**: Your default command for building complete features and making significant changes. Follows a complete workflow: research → plan → **YOUR APPROVAL** → implement → test → review.
 
 **When to use**: Medium to complex features, multi-file changes, when you want thorough planning.
 
 **Quick Start**:
 
 ```bash
-/inge Add user authentication with JWT tokens
+/build Add user authentication with JWT tokens
 
-/inge Implement caching layer for API responses
+/build Implement caching layer for API responses
 
-/inge Add pagination to the products list endpoint
+/build Add pagination to the products list endpoint
 ```
 
 **Time**: 5-20 minutes | **Approval Required**: YES
 
-#### `/senior` - Ultra-Thinking Engineer
+#### `/think` - Deep Architectural Thinking
 
-**Purpose**: Maximum analysis variant of `/inge` for critical work. Uses ULTRATHINK mode for deep exploration at every stage.
+**Purpose**: Maximum analysis variant of `/build` for critical work. Uses ULTRATHINK mode for deep exploration at every stage.
 
 **When to use**: Critical architectural decisions, security-sensitive features, performance optimizations, core system refactoring.
 
 **Quick Start**:
 
 ```bash
-/senior Design a real-time notification system architecture
+/think Design a real-time notification system architecture
 
-/senior Optimize database queries for the dashboard (1M+ records)
+/think Optimize database queries for the dashboard (1M+ records)
 
-/senior Refactor authentication system to support OAuth2 and SAML
+/think Refactor authentication system to support OAuth2 and SAML
 ```
 
 **Time**: 10-30 minutes | **Approval Required**: YES
 
-#### `/frontend` - Frontend Specialist
+#### `/ui` - Frontend/UI Specialist
 
 **Purpose**: React/UI/UX specialist with focus on accessibility, responsive design, and performance.
 
@@ -115,16 +115,16 @@ AI-powered engineering assistants that investigate, plan, implement, and validat
 **Quick Start**:
 
 ```bash
-/frontend Create an accessible date picker component
+/ui Create an accessible date picker component
 
-/frontend Build a responsive navigation menu with mobile hamburger
+/ui Build a responsive navigation menu with mobile hamburger
 
-/frontend Implement dark mode theme switching
+/ui Implement dark mode theme switching
 ```
 
 **Time**: 5-20 minutes | **Approval Required**: YES
 
-#### `/quick-fix` - Fast Fixes
+#### `/patch` - Quick Fixes
 
 **Purpose**: Simplified workflow for simple bugs and small changes. No approval gate - proceeds automatically.
 
@@ -133,11 +133,11 @@ AI-powered engineering assistants that investigate, plan, implement, and validat
 **Quick Start**:
 
 ```bash
-/quick-fix Fix the typo in the error message on line 45
+/patch Fix the typo in the error message on line 45
 
-/quick-fix Update button color to match design system
+/patch Update button color to match design system
 
-/quick-fix Bump lodash to latest version
+/patch Bump lodash to latest version
 ```
 
 **Time**: 1-5 minutes | **Approval Required**: NO
@@ -263,8 +263,8 @@ set -Ux CONTEXT7_API_KEY "your-key"
 The Claude Marketplace plugin system is **actively in development** with core functionality in place:
 
 #### ✅ Completed Features
-- ✅ 7 slash commands fully implemented (/inge, /senior, /frontend, /quick-fix, /review, /review-perf, /review-sec)
-- ✅ 13 specialized agents (research, planner, implementer, tester, reviewer + 8 QA agents)
+- ✅ 7 slash commands fully implemented (/build, /think, /ui, /patch, /review, /review-perf, /review-sec)
+- ✅ 13 specialized agents (investigator, architect, builder, validator, auditor + 8 QA agents)
 - ✅ Comprehensive documentation (1000+ lines across multiple guides)
 - ✅ Session-based artifact generation system
 - ✅ Approval gate workflow
@@ -343,8 +343,8 @@ A comprehensive strategic audit has identified key improvement areas. **Full doc
 This repository now includes a **complete Claude Code plugin** with automated session management hooks!
 
 **What's included:**
-- ✅ **7 Slash Commands**: `/inge`, `/senior`, `/frontend`, `/quick-fix`, `/review`, `/review-perf`, `/review-sec`
-- ✅ **13 Specialized Agents**: Research, planner, implementer, tester, reviewer + 8 quality assurance agents
+- ✅ **7 Slash Commands**: `/build`, `/think`, `/ui`, `/patch`, `/review`, `/review-perf`, `/review-sec`
+- ✅ **13 Specialized Agents**: Investigator, architect, builder, validator, auditor + 8 quality assurance agents
 - ✅ **Automated Session Management**: Hooks that automatically track workflow sessions
 - ✅ **MCP Server Integration**: Context7 for up-to-date documentation
 

@@ -20,7 +20,7 @@ allowed-tools: Task
 
 Let me research the frontend landscape...
 
-<Task agent="research-engineer">
+<Task agent="investigator">
   Analyze the frontend codebase for: $ARGUMENTS
   
   Session directory: .claude/sessions/tasks/{{timestamp}}
@@ -46,7 +46,7 @@ Let me research the frontend landscape...
 
 Designing the UI/UX solution...
 
-<Task agent="planner-engineer">
+<Task agent="architect">
   Design a frontend solution for: $ARGUMENTS
   
   Session directory: .claude/sessions/tasks/{{timestamp}}
@@ -103,7 +103,7 @@ Designing the UI/UX solution...
 
 ## Implementation Starting ✓
 
-<Task agent="implementer-engineer">
+<Task agent="builder">
   Implement the frontend solution for: $ARGUMENTS
   
   Session directory: .claude/sessions/tasks/{{timestamp}}
@@ -135,7 +135,7 @@ Designing the UI/UX solution...
 
 Testing the UI/UX...
 
-<Task agent="tester-engineer">
+<Task agent="validator">
   Validate the frontend implementation for: $ARGUMENTS
   
   Session directory: .claude/sessions/tasks/{{timestamp}}
@@ -188,7 +188,7 @@ Testing the UI/UX...
 
 Final frontend code review...
 
-<Task agent="reviewer-engineer">
+<Task agent="auditor">
   Frontend code review for: $ARGUMENTS
   
   Session directory: .claude/sessions/tasks/{{timestamp}}

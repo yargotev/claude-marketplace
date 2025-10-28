@@ -21,18 +21,18 @@ allowed-tools: Task
 
 Let me start by understanding what we're working with...
 
-<Task agent="research-engineer">
+<Task agent="investigator">
   Analyze the codebase and gather context for: $ARGUMENTS
-  
+
   Session directory: .claude/sessions/tasks/{{timestamp}}
-  
+
   Your goals:
   1. Map the relevant codebase areas
   2. Identify existing patterns and conventions
   3. Assess complexity and dependencies
   4. Find similar implementations for reference
   5. Flag potential risks or constraints
-  
+
   Output your findings to: .claude/sessions/tasks/{{timestamp}}/context.md
 </Task>
 
@@ -42,28 +42,28 @@ Let me start by understanding what we're working with...
 
 Now let me think deeply about the best approach...
 
-<Task agent="planner-engineer">
+<Task agent="architect">
   Design a solution plan for: $ARGUMENTS
-  
+
   Session directory: .claude/sessions/tasks/{{timestamp}}
-  
+
   Input: .claude/sessions/tasks/{{timestamp}}/context.md
-  
+
   Your goals:
   1. Evaluate multiple approaches (at least 3)
   2. Choose the best solution with clear reasoning
   3. Create a step-by-step implementation plan
   4. Identify risks and mitigation strategies
   5. Define success criteria
-  
+
   IMPORTANT: Use extended thinking for complex solutions:
   - Simple tasks: Think through it
   - Medium complexity: Think hard about it
   - Complex tasks: Think harder - explore deeply
   - Critical/high-impact: ULTRATHINK - maximum analysis
-  
+
   Output your plan to: .claude/sessions/tasks/{{timestamp}}/plan.md
-  
+
   Return with: ⏸️ AWAITING USER APPROVAL BEFORE IMPLEMENTATION
 </Task>
 
@@ -92,24 +92,24 @@ Now let me think deeply about the best approach...
 
 ## Implementation Starting ✓
 
-<Task agent="implementer-engineer">
+<Task agent="builder">
   Execute the implementation plan for: $ARGUMENTS
-  
+
   Session directory: .claude/sessions/tasks/{{timestamp}}
-  
+
   Inputs:
   - Context: .claude/sessions/tasks/{{timestamp}}/context.md
   - Plan: .claude/sessions/tasks/{{timestamp}}/plan.md
-  
+
   Your goals:
   1. Follow the plan step-by-step
   2. Write tests first (TDD approach)
   3. Make atomic, well-described commits
   4. Track progress in real-time
   5. Handle errors gracefully
-  
+
   Output progress to: .claude/sessions/tasks/{{timestamp}}/progress.md
-  
+
   Return when: All steps completed successfully
 </Task>
 
@@ -119,25 +119,25 @@ Now let me think deeply about the best approach...
 
 Now validating the work...
 
-<Task agent="tester-engineer">
+<Task agent="validator">
   Validate the implementation for: $ARGUMENTS
-  
+
   Session directory: .claude/sessions/tasks/{{timestamp}}
-  
+
   Inputs:
   - Context: .claude/sessions/tasks/{{timestamp}}/context.md
   - Plan: .claude/sessions/tasks/{{timestamp}}/plan.md
   - Progress: .claude/sessions/tasks/{{timestamp}}/progress.md
-  
+
   Your goals:
   1. Run all automated tests (unit, integration, e2e)
   2. Verify test coverage (>80% for new code)
   3. Perform manual testing checklist
   4. Test edge cases and error scenarios
   5. Check performance if applicable
-  
+
   Output test results to: .claude/sessions/tasks/{{timestamp}}/test_report.md
-  
+
   Return when: All tests pass and coverage is adequate
 </Task>
 
@@ -147,26 +147,26 @@ Now validating the work...
 
 Final code review...
 
-<Task agent="reviewer-engineer">
+<Task agent="auditor">
   Perform final code review for: $ARGUMENTS
-  
+
   Session directory: .claude/sessions/tasks/{{timestamp}}
-  
+
   Inputs:
   - Context: .claude/sessions/tasks/{{timestamp}}/context.md
   - Plan: .claude/sessions/tasks/{{timestamp}}/plan.md
   - Progress: .claude/sessions/tasks/{{timestamp}}/progress.md
   - Test Report: .claude/sessions/tasks/{{timestamp}}/test_report.md
-  
+
   Your goals:
   1. Review code quality and maintainability
   2. Check architecture and design patterns
   3. Validate security best practices
   4. Assess performance implications
   5. Verify test coverage and quality
-  
+
   Output review to: .claude/sessions/tasks/{{timestamp}}/review.md
-  
+
   Return verdict: APPROVE / APPROVE WITH NOTES / REQUEST CHANGES
 </Task>
 
